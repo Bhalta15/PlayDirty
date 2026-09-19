@@ -122,6 +122,7 @@ input:focus,select:focus{border-color:var(--l0);outline:none}
   font-size:clamp(1.55rem,6.6vw,2.1rem);
 }
 .card .text.long{font-size:clamp(1.3rem,5.4vw,1.7rem)}
+.card .text.xlong{font-size:clamp(1.1rem,4.6vw,1.4rem)}
 .card.idle .text{font-weight:600;opacity:.9;font-size:clamp(1.3rem,5.4vw,1.7rem)}
 .card.flip{animation:flip .55s cubic-bezier(.3,.7,.2,1)}
 @keyframes flip{from{transform:rotateY(90deg) scale(.96)}to{transform:none}}
@@ -213,7 +214,7 @@ dialog a{color:var(--l1)}
     <img src="icon-192.png" alt="" width="56" height="56">
     <h1>PlayDirty</h1>
   </div>
-  <p class="lead">Retos y poses para dos, con cartas que suben de temperatura. Todo es opcional y se puede saltar.</p>
+  <p class="lead">Retos, poses y minijuegos para dos, que van subiendo de temperatura. Solo para adultos.</p>
 
   <div class="block">
     <label for="n1">¿Quiénes juegan?</label>
@@ -223,12 +224,16 @@ dialog a{color:var(--l1)}
     </div>
   </div>
 
+  <button class="primary" id="start">Jugar con cartas<small>Retos, poses y castigos</small></button>
+  <button class="primary alt" id="startMinis">Minijuegos<small>La bomba y Camino al final</small></button>
+  <p class="safe">Antes de jugar, ajusten el nivel de las cartas y lean las reglas aquí abajo.</p>
+
   <div class="block">
-    <span class="lbl">Para las cartas: ¿con qué nivel empiezan?</span>
+    <span class="lbl">Ajustes de las cartas: ¿con qué nivel empiezan?</span>
     <div class="levels" id="levelPick">
-      <button class="lv" data-l="0" aria-pressed="true"><i class="dot"></i><div><b>Suave</b><span>Besos, mimos y toques que ella o él elija</span></div></button>
-      <button class="lv" data-l="1" aria-pressed="false"><i class="dot"></i><div><b>Picante</b><span>Ropa de menos, vendas y retos atrevidos</span></div></button>
-      <button class="lv" data-l="2" aria-pressed="false"><i class="dot"></i><div><b>Intenso</b><span>Sin ropa, con control y para prenderse de verdad</span></div></button>
+      <button class="lv" data-l="0" aria-pressed="true"><i class="dot"></i><div><b>Suave</b><span>Besos, caricias, ropa de menos y mucho coqueteo</span></div></button>
+      <button class="lv" data-l="1" aria-pressed="false"><i class="dot"></i><div><b>Picante</b><span>Ropa afuera, manos, boca y retos atrevidos</span></div></button>
+      <button class="lv" data-l="2" aria-pressed="false"><i class="dot"></i><div><b>Intenso</b><span>Sin ropa, relaciones a ritmo y más...</span></div></button>
     </div>
   </div>
 
@@ -238,20 +243,6 @@ dialog a{color:var(--l1)}
       <span>Subir el nivel poco a poco<small>Cada 4 turnos sube un nivel, hasta Intenso.</small></span>
     </label>
   </div>
-
-  <div class="block rules">
-    <h2>Antes de empezar</h2>
-    <ul>
-      <li><b>Todo es opcional.</b> Cualquiera puede pasar una carta cuando quiera.</li>
-      <li>Hablen antes de sus <b>límites</b>: lo que sí, lo que no y lo que quizá. Los retos de "no puedes negarte" y los de zonas íntimas se cumplen solo dentro de eso.</li>
-      <li>Elijan juntos una <b>palabra segura</b>. Si alguien la dice, se para todo.</li>
-      <li>Nada de dolor real, nada que no les guste y nada de fotos ni videos.</li>
-      <li>Si algo no se siente bien, se cambia de carta y ya.</li>
-    </ul>
-  </div>
-
-  <button class="primary" id="start">Jugar con cartas<small>Retos, poses y castigos</small></button>
-  <button class="primary alt" id="startMinis">Minijuegos<small>La bomba y Camino al final</small></button>
   <button class="linkbtn" id="installBtn" hidden>Instalar PlayDirty en este dispositivo</button>
   <button class="linkbtn" id="openAI">Conectar IA de Gemini (opcional)</button>
 </section>
@@ -289,18 +280,18 @@ dialog a{color:var(--l1)}
   <div class="decks" id="decks">
     <button data-t="reto">Reto<small>Algo que hacer</small></button>
     <button data-t="pose">Pose<small>Una idea para probar</small></button>
-    <button data-t="sorpresa" class="wide">Sorpréndeme<small>Que decida la suerte</small></button>
+    <button data-t="sorpresa" class="wide">Aleatorio<small>Que decida la suerte</small></button>
   </div>
 
   <div class="acts" id="acts" hidden>
     <button class="ok" id="done">Hecho, sigue tu pareja</button>
-    <button id="pass">Paso, me toca un castigo</button>
-    <button class="ghost" id="skip">Mejor otra carta sin castigo</button>
+    <button id="pass">Paso, elijo un castigo</button>
+    <button class="ghost" id="skip">Pasar a otra carta, sin castigo (2 por juego)</button>
   </div>
 
   <div class="acts" id="actsPun" hidden>
     <button class="ok" id="donePun">Cumplido, sigue tu pareja</button>
-    <button class="ghost" id="skipPun">No quiero, saltar sin castigo</button>
+    <button class="ghost" id="skipPun">Saltar sin castigo (2 por juego)</button>
   </div>
 
   <p class="safe">Si algo no te late, di la palabra segura y paramos.</p>
@@ -315,8 +306,8 @@ dialog a{color:var(--l1)}
   </div>
 
   <div class="menu" id="miniMenu">
-    <button class="gamebtn" data-g="bomb"><b>La bomba</b><span>Hay un número secreto escondido. Por turnos eligen un número y la app dice si el secreto es más alto o más bajo. Quien pesca la bomba pierde y se quita una prenda, cada vez más.</span></button>
-    <button class="gamebtn" data-g="path"><b>Camino al final</b><span>Cinco etapas que suben el calor: besos, manos, menos ropa, boca y el final, con una pose para terminar en la cama.</span></button>
+    <button class="gamebtn" data-g="bomb"><b>La bomba</b><span>Hay un número secreto escondido. Por turnos eligen un número y la app dice si el secreto es más alto o más bajo. Quien pesca la bomba pierde y cumple un castigo cada vez más caliente, con ratitos de sexo oral y de relaciones.</span></button>
+    <button class="gamebtn" data-g="path"><b>Camino al final</b><span>Cinco etapas que suben el calor: besos, manos, menos ropa, boca y el final, con una pose y un ratito de ritmo lento o rápido para terminar en la cama.</span></button>
   </div>
 
   <div id="bomb" hidden>
@@ -686,6 +677,203 @@ const BANK = {
 };
 
 
+/* ===================== EXPANSIÓN: MÁS TONO, MÁS POSES, MÁS ORAL Y RATITOS ===================== */
+(function () {
+  // Quitamos las cartas más tímidas del nivel Suave para que no baje el ritmo
+  BANK.reto[0] = BANK.reto[0].filter((t) => !/Acuéstense abrazados|masaje de pies|Quítale los zapatos/.test(t));
+  BANK.castigo[0] = BANK.castigo[0].filter((t) => !/snack|locutor de radio|ridícula/.test(t));
+
+  BANK.reto[0].push(
+    "Mete las manos bajo la ropa de tu pareja y acaricia su espalda y su abdomen durante 1 minuto mientras se besan.",
+    "Quítale a tu pareja la prenda de arriba con calma, besando cada parte que descubras.",
+    "Bésale los muslos a tu pareja por encima de la ropa, de la rodilla hacia arriba, y para donde ella o él te diga.",
+    "Tu pareja te venda los ojos 1 minuto y te besa donde quiera, de la cintura para arriba.",
+    "Dile a tu pareja una fantasía que tengas con ella o él, y cierra cada frase con un beso.",
+    "Sentado o sentada en las piernas de tu pareja, bésala o bésalo despacio mientras sus manos bajan por tu espalda.",
+    "Quítate una prenda a elección de tu pareja y bailen pegados 30 segundos.",
+    "Besa el cuello y las orejas de tu pareja durante 1 minuto mientras te sostiene de la cintura.",
+    "Ponte detrás de tu pareja, pega tu cuerpo al suyo y susúrrale qué le harías si estuvieran solos sin reglas.",
+    "Roza con los labios la piel de tu pareja sin llegar a besarla, del cuello al abdomen, durante 1 minuto.",
+    "Tu pareja elige: o se quita una prenda, o te quita una a ti. Tú decides cuál queda mejor con un beso."
+  );
+
+  BANK.reto[1].push(
+    "Tu pareja mete la mano por debajo de tu ropa interior y te acaricia durante 1 minuto. Tú solo respiras y disfrutas (dentro de lo acordado).",
+    "Dale a tu pareja 30 segundos de sexo oral muy suave. Quien recibe decide cuándo se corta.",
+    "Acaricia a tu pareja con la mano por encima de la ropa interior: 1 minuto lento y 30 segundos más rápido.",
+    "Besa la parte interna de los muslos de tu pareja y termina con un beso sobre la ropa interior. Repítelo 3 veces, cada vez más lento.",
+    "Quédense en ropa interior y frótense despacio, cuerpo con cuerpo, durante 2 minutos, sin quitarse nada.",
+    "Quítale la ropa interior a tu pareja muy despacio, sin apartar la mirada, y déjala en sus manos.",
+    "Muéstrale con tu propia mano cómo te gusta que te toquen durante 1 minuto. Después ella o él toma el relevo.",
+    "Besa y lame el pecho de tu pareja durante 1 minuto, mientras ella o él te guía con la mano.",
+    "Tu pareja te pone en la postura que elija y te besa por todos lados durante 1 minuto. Tú solo puedes suspirar, nada de palabras.",
+    "Reto de control: 1 minuto de caricias en zona íntima con la mano, y quien recibe dice «más lento» o «más rápido» cuando quiera.",
+    "Con los ojos vendados, tu pareja te da a probar tres cosas distintas: un beso, sus dedos y su lengua. Adivina cuál es cuál.",
+    "Siéntate frente a tu pareja y tócate para ella o para él durante 1 minuto, sin dejar de mirarle a los ojos.",
+    "Besa a tu pareja bajando por el abdomen hasta la cadera y sube de nuevo, 3 veces, cada vez más despacio.",
+    "Pon tu boca sobre la ropa interior de tu pareja y respira caliente 30 segundos. Ella o él decide si sigue.",
+    "Dile a tu pareja, con detalle y sin pena, cómo le harías el sexo oral. Si quiere, lo hacen al terminar tu turno.",
+    "Recorre con la lengua el cuello, el pecho y el abdomen de tu pareja, y llega hasta el borde de su ropa interior. Ahí paras.",
+    "Sexo oral de 1 minuto para quien saque esta carta: tu pareja se acomoda como quiera y tú solo recibes."
+  );
+
+  BANK.reto[2].push(
+    "Sexo oral de 2 minutos a tu pareja: el primer minuto muy lento y el segundo con el ritmo que ella o él te pida. Después cambian.",
+    "Relaciones durante 1 minuto lento y con protección. Al terminar el minuto paran del todo 30 segundos para mirarse antes de seguir.",
+    "Penetración lenta durante 1 minuto en la postura que elija tu pareja, y se separan para volver al juego.",
+    "30 segundos rápido y 30 segundos lento, con la postura que elija quien sacó la carta. Después vuelven a las cartas.",
+    "Tu pareja te lleva al límite con la boca durante 2 minutos y para justo antes del final. Después cambian.",
+    "69 durante 2 minutos. Quien aguante más sin pedir cambio elige la siguiente carta.",
+    "Cuenta regresiva: 10 movimientos lentos, 10 medios y 10 rápidos, con protección, y se separan a respirar.",
+    "Tu pareja elige la postura y el ritmo durante 90 segundos. Al terminar, ella o él decide si siguen o vuelven a las cartas.",
+    "Cambio de ritmo cada 20 segundos: lento, rápido, pausa total, otra vez, durante 2 minutos, con protección.",
+    "Ratito de relaciones de 1 minuto contra la pared o de pie, y paran a los 60 segundos, pase lo que pase, para besarse.",
+    "Tu pareja te toca con la mano durante 2 minutos donde más te gusta, y tú le dices cuándo ir más rápido o más lento.",
+    "Uno se queda quieto o quieta y el otro se mueve durante 1 minuto en la postura que elijan. Después cambian roles.",
+    "Sexo oral de 1 minuto, relaciones de 1 minuto y otro minuto de caricias con la mano. Al terminar, eligen la siguiente carta.",
+    "Tu pareja decide cuántos segundos (entre 30 y 90) y en qué postura tienen relaciones, con protección. Lo cumplen sin discutir.",
+    "Sexo oral 1 minuto con la mano de tu pareja en tu cabeza marcando el ritmo. Después cambian.",
+    "Se turnan: 30 segundos de boca, 30 segundos de manos, 30 segundos de relaciones lentas y se quedan quietos abrazados 30 segundos.",
+    "Dile a tu pareja qué postura quieres ahora mismo, y la prueban 1 minuto. Si les gusta, se quedan otro minuto.",
+    "Relaciones lentas por 1 minuto mirándose a los ojos, sin hablar. Al minuto exacto se paran y se dan un beso largo."
+  );
+
+  BANK.castigo[0].push(
+    "Quítate la prenda de arriba y deja que tu pareja te bese el pecho o el abdomen durante 30 segundos.",
+    "Baila pegado o pegada a tu pareja, rozándola despacio, hasta que termine la canción.",
+    "Deja que tu pareja te acaricie por debajo de la ropa (cintura para arriba) durante 1 minuto.",
+    "Susúrrale al oído lo que te gustaría que te hiciera esta noche, con detalle.",
+    "Tu pareja te besa donde quiera (fuera de zonas íntimas) durante 30 segundos y tú no puedes tocarla."
+  );
+
+  BANK.castigo[1].push(
+    "Sexo oral de 30 segundos a tu pareja, suave y despacio, y ella o él decide cuándo termina.",
+    "Deja que tu pareja te acaricie por debajo de la ropa interior durante 1 minuto.",
+    "Quédate sin ropa interior hasta que termine la siguiente ronda.",
+    "Tu pareja te besa por encima de la ropa interior, en la zona que elija, durante 1 minuto.",
+    "Acaricia a tu pareja con la mano durante 1 minuto, lento y luego rápido, como ella o él te pida.",
+    "Tócate frente a tu pareja durante 30 segundos, mirándole a los ojos.",
+    "Recorre con la lengua el cuerpo de tu pareja, del cuello al ombligo, y baja hasta el borde de su ropa interior. Ahí paras.",
+    "Quédate en ropa interior y frótate contra tu pareja durante 1 minuto, sin quitarte nada.",
+    "Recibe 1 minuto de caricias en la zona íntima por encima de la ropa interior sin poder moverte."
+  );
+
+  BANK.castigo[2].push(
+    "Sexo oral de 1 minuto a tu pareja, con el ritmo que ella o él te marque. Después cambian.",
+    "Relaciones de 30 segundos, con protección, lentas, en la postura que elija tu pareja. Después vuelven a las cartas.",
+    "1 minuto rápido y 1 minuto lento de relaciones, con protección, y paran.",
+    "Deja que tu pareja te lleve al límite con la mano durante 1 minuto y se detenga justo antes.",
+    "Sexo oral de 2 minutos: 1 minuto lento, 1 minuto rápido. Tu pareja decide quién empieza.",
+    "Relaciones de 1 minuto en la postura que elija tu pareja, sin cambiar de ritmo, y se separan a respirar.",
+    "Uno se queda quieto y el otro se mueve durante 1 minuto. Después cambian.",
+    "Sexo oral de 30 segundos, relaciones de 30 segundos y otra vez sexo oral de 30 segundos. Con protección.",
+    "Tu pareja elige cuánto tiempo y a qué ritmo (entre 30 y 60 segundos) tienen relaciones, con protección. Tú solo obedeces, dentro de lo acordado.",
+    "Recibe 2 minutos de sexo oral con los ojos vendados, sin decir una palabra.",
+    "Pídele a tu pareja, con palabras claras, que te haga sexo oral 1 minuto. Ella o él lo cumple y decide si sigue.",
+    "Relaciones lentas de 1 minuto y después 30 segundos de pausa total, abrazados, sin moverse.",
+    "Baila sin ropa y termina sentado o sentada sobre tu pareja unos 30 segundos, con protección. Después se paran.",
+    "Sexo oral cruzado (69) durante 1 minuto y medio. El que termine antes elige el siguiente castigo del otro.",
+    "Tu pareja escoge una postura de las cartas y la prueban 1 minuto exacto, con protección. Luego se separan.",
+    "3 rondas de 20 segundos: lento, rápido, pausa. Con protección, en la postura que elijan.",
+    "Tu pareja te recorre con la boca hasta que le pidas parar, con máximo 2 minutos.",
+    "Relaciones con un solo ritmo, muy lento, durante 90 segundos. Después de eso, se besan y siguen jugando."
+  );
+
+  // ---------- POSES: más variedad, estilo kamasutra ----------
+  BANK.pose[0].push(
+    P("Beso en el borde", "borde", "Uno sentado en el borde de la cama y el otro de pie entre sus piernas, con besos largos y manos bajo la ropa.",
+      ["Uno se sienta en el borde de la cama.", "El otro se para entre sus piernas.", "Bésense y dejen que las manos exploren espalda y cintura."]),
+    P("Piernas enredadas", "tijera", "Acostados de lado con las piernas entrelazadas y besos calientes, con las manos bajo la ropa.",
+      ["Acuéstense de lado, mirándose.", "Entrelacen las piernas y acerquen las caderas.", "Bésense y acaricien espalda y muslos por debajo de la ropa."]),
+    P("Masaje con besos", "masaje", "Uno boca abajo, sin camiseta, y el otro sentado sobre su espalda baja, masajeando y besando desde la nuca.",
+      ["Uno se acuesta boca abajo.", "El otro se sienta sobre su espalda baja, sin cargar peso.", "Masajea hombros y espalda y baja con besos lentos."],
+      "Con aceite o crema tibia se siente mejor."),
+    P("Rozándose de pie", "atras", "De pie frente al espejo, uno detrás del otro, con las manos bajo la ropa y besos en el cuello.",
+      ["Párense frente al espejo, uno detrás del otro.", "Quien va detrás rodea la cintura y sube las manos bajo la camiseta.", "Muévanse despacio, rozándose, y miren el reflejo."])
+  );
+
+  BANK.pose[1].push(
+    P("Enredadera", "pared", "De pie, uno con una pierna alrededor de la cadera del otro, con besos profundos y manos libres.",
+      ["Uno se recarga en la pared.", "El otro sube una pierna de su pareja a su cadera.", "Besos largos y manos por la espalda y los muslos."]),
+    P("La mariposa", "borde", "Uno acostado con las caderas al borde de la cama y las piernas abiertas, y el otro de pie o de rodillas, con besos, manos y boca.",
+      ["Uno se acuesta con la cadera en el borde.", "El otro se coloca frente, de pie o de rodillas.", "Exploren con manos y boca, con el ritmo que quieran."],
+      "Una almohada bajo la cadera lo hace más cómodo."),
+    P("Loto abierto", "loto", "Sentados de frente, muy pegados, con las piernas de uno alrededor de la cadera del otro, moviéndose lento.",
+      ["Uno se sienta con las piernas cruzadas.", "El otro se sienta encima, de frente, y rodea con las piernas.", "Abrácense y muévanse despacio, mirándose a los ojos."]),
+    P("Rodillas y manos", "rodillas", "Uno apoyado en manos y rodillas en la cama y el otro detrás, con caricias y besos por la espalda.",
+      ["Uno se apoya en manos y rodillas.", "El otro se coloca detrás, con las manos en su cintura.", "Caricias, besos y susurros al oído."],
+      "Una almohada bajo las rodillas ayuda."),
+    P("Sentado al borde", "silla", "Uno sentado en el borde de la cama o en una silla firme y el otro encima, de frente, con besos y las manos libres.",
+      ["Uno se sienta en el borde o en una silla firme.", "El otro se sienta sobre sus piernas, de frente.", "Abrácense, bésense y muévanse lento."]),
+    P("El ancla", "encima", "Uno boca arriba y el otro encima, con las piernas entre las suyas, con besos y manos por todo el cuerpo.",
+      ["Uno se acuesta boca arriba.", "El otro se acuesta encima, con las piernas entre las suyas.", "Besos largos y manos recorriendo espalda, cintura y muslos."]),
+    P("De espaldas al espejo", "atras", "De pie frente al espejo, uno detrás del otro, con caricias lentas y besos en el cuello.",
+      ["Colóquense frente al espejo.", "Quien va detrás rodea con un brazo y baja la otra mano despacio.", "Miren el reflejo mientras se acarician."]),
+    P("Cara a cara en la ducha", "ducha", "Bajo el agua tibia, muy pegados, con jabón, besos y manos por todo el cuerpo.",
+      ["Métanse juntos al agua tibia.", "Enjabónense despacio, sin apuro.", "Besos contra la pared con el agua cayendo."],
+      "Tapete antiderrapante y mucho cuidado."),
+    P("La escalera", "puente", "Uno boca arriba con las piernas dobladas sobre una almohada y el otro de rodillas frente a él o ella, con caricias y besos.",
+      ["Uno se acuesta con almohadas bajo la cadera.", "El otro se arrodilla frente a él o ella.", "Caricias y besos en muslos, vientre y cadera."])
+  );
+
+  BANK.pose[2].push(
+    P("Misionero cerrado", "encima", "Uno boca arriba y el otro encima, con las piernas juntas, muy pegados, moviéndose lento y besándose sin parar.",
+      ["Uno se acuesta boca arriba con las piernas juntas o un poco abiertas.", "El otro se acuesta encima, pecho con pecho.", "Muévanse lento, con besos y respiración larga."],
+      "Con protección y lubricante si lo necesitan."),
+    P("Misionero con almohada", "puente", "Uno boca arriba con una almohada bajo la cadera y el otro frente a él o ella, con un ángulo que se siente muy profundo.",
+      ["Uno se acuesta boca arriba con una almohada bajo la cadera.", "El otro se arrodilla entre sus piernas.", "Muévanse despacio, avisen si hay molestia."],
+      "Con protección. Si algo molesta, bajen la almohada."),
+    P("Vaquera lenta", "amazona", "Uno acostado y el otro encima, de frente, con movimientos lentos y mirándose a los ojos.",
+      ["Uno se acuesta boca arriba.", "El otro se sienta encima, de frente.", "Quien está arriba lleva el ritmo, lento al principio."],
+      "Con protección."),
+    P("Vaquera inversa", "amazonaInv", "Como la vaquera, pero quien está arriba mira hacia los pies del otro, con el ritmo que quiera.",
+      ["Uno se acuesta boca arriba.", "El otro se sienta encima, de espaldas.", "Quien está arriba marca el ritmo y las manos exploran."],
+      "Con protección. Si incomoda, cambien sin problema."),
+    P("Perrito bajo", "rodillas", "Uno de rodillas con el pecho apoyado en la cama y el otro detrás, con ritmos que cambian.",
+      ["Uno se pone de rodillas con el pecho sobre almohadas.", "El otro se arrodilla detrás y lo sostiene de la cadera.", "Cambien el ritmo cada 20 segundos: lento, rápido, pausa."],
+      "Con protección. Quien está adelante puede pedir más o menos."),
+    P("Loto en movimiento", "loto", "Sentados de frente y abrazados, con las piernas alrededor de la cadera, meciéndose despacio.",
+      ["Uno se sienta con las piernas cruzadas.", "El otro se sienta encima, de frente.", "Abrácense fuerte y muévanse como una mecedora."],
+      "Con protección."),
+    P("El columpio", "silla", "Uno sentado en una silla firme y el otro encima, de frente, meciéndose hacia adelante y atrás.",
+      ["Uno se sienta en una silla firme, sin ruedas.", "El otro se sienta encima, de frente.", "Mézanse hacia adelante y atrás, agarrados del cuello."],
+      "Con protección. Silla firme."),
+    P("De pie con una pierna arriba", "pared", "Uno recargado en la pared y el otro de frente, con una pierna sobre su cadera, moviéndose lento.",
+      ["Uno se recarga en la pared.", "El otro se pega de frente y sube una de sus piernas.", "Muévanse despacio, con besos profundos."],
+      "Con protección. No fuercen la flexibilidad."),
+    P("La grúa", "cargado", "De pie contra la pared, con uno sosteniendo al otro por los muslos. Solo si los dos tienen fuerza y se sienten seguros.",
+      ["Uno se recarga en la pared.", "El otro lo sostiene por los muslos y la cadera.", "Rodeen con las piernas y muévanse despacio."],
+      "Con protección. Si cansa, se baja sin drama."),
+    P("La mesa", "escritorio", "Uno sentado en el borde de una mesa firme, con las piernas alrededor del otro, que está de pie.",
+      ["Uno se sienta en el borde de una mesa firme y despejada.", "El otro se para entre sus piernas.", "Con las piernas alrededor de la cadera, marquen el ritmo."],
+      "Con protección. Mesa firme y estable."),
+    P("El caracol", "lateral", "Acostados de lado, cabeza con cadera, con almohadas, con calma y comunicación.",
+      ["Acuéstense de lado, uno con la cabeza hacia los pies del otro.", "Pongan almohadas bajo la cabeza.", "Sigan el ritmo del otro y avisen si quieren cambiar."]),
+    P("La cobra", "masaje", "Uno boca abajo y el otro encima por detrás, con besos en la nuca y el cuello.",
+      ["Uno se acuesta boca abajo con una almohada bajo la cadera.", "El otro se acuesta encima por detrás, con el peso en los brazos.", "Muévanse lento, con besos en la nuca."],
+      "Con protección. No carguen todo el peso."),
+    P("Cascada profunda", "ducha", "Bajo la regadera, contra la pared, uno sosteniendo al otro con una pierna alrededor.",
+      ["Uno se recarga en la pared de la ducha.", "El otro se pega de frente y sube una pierna.", "Muévanse despacio bajo el agua."],
+      "Con protección. Tapete antiderrapante."),
+    P("El trono con espejo", "silla", "Uno sentado en el sillón y el otro sobre él, de frente al espejo si hay uno.",
+      ["Uno se sienta en el sillón con la espalda recta.", "El otro se sienta encima, de frente o de espaldas.", "Miren el reflejo y cambien de ritmo."],
+      "Con protección."),
+    P("Piernas en V", "puente", "Uno boca arriba con las piernas abiertas en V y el otro frente a él o ella, de rodillas.",
+      ["Uno se acuesta boca arriba con las rodillas dobladas y abiertas.", "El otro se arrodilla entre sus piernas.", "Muévanse lento y cambien de ritmo cada 30 segundos."],
+      "Con protección. No fuercen la flexibilidad."),
+    P("Cucharita profunda con piernas", "cuchara", "Cucharita con una pierna sobre la cadera, muy pegados, con la mano libre acariciando.",
+      ["Acuéstense de lado en cucharita.", "Quien va adelante sube una pierna un poco.", "Muévanse lento, con la mano libre acariciando."],
+      "Con protección. Ajusten con una almohada."),
+    P("Loto acostado", "encima", "Uno boca arriba con las piernas abiertas alrededor del otro, que está de rodillas frente a él o ella.",
+      ["Uno se acuesta con las piernas alrededor de la cadera del otro.", "El otro se arrodilla frente a él o ella.", "Muévanse despacio, mirándose."],
+      "Con protección."),
+    P("Sobre el borde, piernas al hombro", "borde", "Uno boca arriba con la cadera al borde de la cama y las piernas sobre los hombros del otro, que está de pie.",
+      ["Uno se acuesta con la cadera en el borde.", "El otro se para frente y sube sus piernas a sus hombros.", "Marquen el ritmo juntos."],
+      "Con protección. Si molesta, bajen las piernas.")
+  );
+})();
+
+
 /* ===================== ILUSTRACIONES (monitos esquemáticos) ===================== */
 /* Cada plantilla: fondo (bg) + dos figuras {c: color 0/1, h: cabeza, l: líneas} */
 const ART = {
@@ -860,15 +1048,16 @@ const ART_HELP = {
 };
 
 const TYPE_DESC = {
-  reto: "un reto sensual y atrevido entre los dos: quitarse una prenda (que elija el otro, con la boca, bailando, de un jalón), quedarse en ropa interior o sin nada, vendas en los ojos, hielo, besos, tocar, besar o lamer donde elija el otro (zonas íntimas incluidas en Picante e Intenso), dejar que el otro tenga el control o cumplir lo que pida sin poder negarse (dentro de lo acordado)",
-  pose: "una postura o posición para probar juntos, con nombre llamativo (silla, loto, amazona, tijera, ducha, espejo, pared, borde de la cama...), descrita en tono sugerente, con cómo se hace paso a paso y una nota de comodidad o cuidado si es exigente",
-  castigo: "una penitencia atrevida y coqueta para quien decidió pasar una carta (quitarse ropa, quedarse en ropa interior, obedecer un rato, jugar con los ojos vendados, besos, caricias, lamer o tocar donde elija el otro, zonas íntimas incluidas en Picante e Intenso)"
+  reto: "un reto sensual y atrevido entre los dos: quitarse ropa, ropa interior o quedarse sin nada, vendas en los ojos, hielo, besos, tocar, besar o lamer donde elija el otro (zonas íntimas incluidas en Picante e Intenso), sexo oral por un tiempo corto, y en Intenso ratitos cortos de relaciones (con protección) a ritmo lento o rápido, con pausas, o cumplir lo que pida el otro sin poder negarse (dentro de lo acordado)",
+  pose: "una postura o posición estilo kamasutra para probar juntos, con nombre llamativo (silla, loto, amazona, tijera, ducha, espejo, pared, borde de la cama, perrito, misionero...), descrita en tono sugerente, con cómo se hace paso a paso y una nota de comodidad o cuidado si es exigente",
+  castigo: "una penitencia atrevida y caliente para quien decidió pasar una carta (quitarse ropa, quedarse en ropa interior, obedecer un rato, jugar con los ojos vendados, besos, caricias, sexo oral por 30 a 90 segundos, y en Intenso ratitos cortos de relaciones con protección a ritmo lento o rápido, con pausas)"
 };
 const LEVEL_DESC = [
-  "Suave: coqueto y cálido. Besos, abrazos, masajes y tocar una zona no íntima que elija el otro. Enciende el ambiente sin pasarse.",
-  "Picante: atrevido y sensual. Quitarse prendas, ropa interior, vendas, hielo, besos y caricias donde el otro elija, incluso zonas íntimas por encima de la ropa interior, control por turnos.",
-  "Intenso: muy atrevido, erótico y apasionado. Quedarse sin nada, quitarse todo de un jalón, estriptis, dejar que el otro mande, tocar, besar o lamer zonas íntimas, sexo oral, juegos previos largos. Sin lenguaje vulgar ni descripciones anatómicas gráficas."
+  "Suave: coqueto y caliente. Besos profundos, manos bajo la ropa, quitar la prenda de arriba, besos en muslos por encima de la ropa, susurros picantes. Sin llegar a zonas íntimas directas.",
+  "Picante: atrevido y sensual. Ropa interior, tocar por debajo de la ropa interior, sexo oral muy corto (30 a 60 segundos), tocarse frente al otro, hielo, vendas, control por turnos.",
+  "Intenso: muy atrevido, erótico y apasionado. Quedarse sin nada, estriptis, sexo oral de 1 a 3 minutos, 69, llevar al límite y parar, y ratitos cortos de relaciones (con protección) a ritmo lento o rápido, de 30 segundos a 2 minutos, con pausas. Sin lenguaje vulgar ni descripciones anatómicas gráficas."
 ];
+
 
 async function askGemini(type, level) {
   const isPose = type === "pose";
@@ -1081,12 +1270,14 @@ function closeMinis() { MI.root.hidden = true; el.setup.hidden = false; window.s
 const BOMB_MAX = 30;
 const B = { secret: 0, low: 1, high: BOMB_MAX, turn: 0, starter: 0, loser: 0, losses: [0, 0], over: false };
 const LADDER = [
-  "Quítate una prenda, la que elija tu pareja.",
-  "Otra prenda más, y esta te la quita tu pareja.",
-  "Quédate en ropa interior si aún no lo estás, y date una vuelta lenta.",
-  "Quítate la siguiente prenda bailando, 20 segundos.",
-  "Quédate sin nada si aún no lo estás, y tu pareja elige qué hacen a continuación.",
-  "Ya sin ropa: cumples lo que tu pareja pida durante 1 minuto, dentro de lo acordado."
+  "Quítate una prenda, la que elija tu pareja, y baila 20 segundos así.",
+  "Otra prenda más, y esta te la quita tu pareja con la boca.",
+  "Quédate en ropa interior y tu pareja te besa donde quiera durante 1 minuto.",
+  "Tu pareja te toca por debajo de la ropa interior durante 1 minuto, y tú no puedes moverte.",
+  "Quédate sin nada y recibe 1 minuto de sexo oral, sin decir una palabra.",
+  "Sexo oral de 1 minuto a tu pareja, con el ritmo que ella o él te marque.",
+  "Relaciones de 30 segundos, con protección, lentas, en la postura que elija tu pareja. Después paran.",
+  "1 minuto lento y 30 segundos rápido de relaciones, con protección, y se separan a respirar."
 ];
 const ladderFor = (n) => LADDER[Math.min(n - 1, LADDER.length - 1)];
 
@@ -1193,6 +1384,35 @@ const PATH = [
   ] },
   { n: "El final", t: null }
 ];
+
+PATH[0].t.push(
+  "Mete las manos bajo la ropa de tu pareja y acaricia su espalda y su abdomen mientras la besas, 1 minuto.",
+  "Siéntate sobre tu pareja, de frente, y bésala o bésalo con calma mientras sus manos bajan por tu espalda.",
+  "Quítale la prenda de arriba a tu pareja despacio, besando cada parte que descubras."
+);
+PATH[1].t.push(
+  "Acaricia a tu pareja por debajo de la ropa interior, por encima de la piel, durante 30 segundos, y para.",
+  "Quítale la ropa interior a tu pareja muy despacio y déjala en sus manos.",
+  "Besa la parte interna de los muslos de tu pareja de arriba abajo, 3 veces, cada vez más lento."
+);
+PATH[2].t.push(
+  "Sexo oral de 30 segundos a tu pareja, muy suave, y ella o él decide cuándo cortar.",
+  "Quédense sin ropa y frótense, cuerpo con cuerpo, durante 2 minutos.",
+  "Tu pareja te toca con la mano donde más le gusta durante 1 minuto lento y 30 segundos rápido."
+);
+PATH[3].t.push(
+  "Sexo oral de 2 minutos: 1 minuto lento y 1 minuto con el ritmo que te pida tu pareja. Después cambian.",
+  "69 durante 90 segundos. Quien aguante más sin pedir cambio elige la pose del final.",
+  "Tu pareja te lleva al límite con la boca 1 minuto y para justo antes del final. Después cambian."
+);
+const FINAL_TASKS = [
+  "Prueben esto 1 minuto lento, con protección, y paren 30 segundos a respirar.",
+  "Ritmo de 20 segundos: lento, rápido, pausa. Repitan 3 veces, con protección.",
+  "Quien está arriba o atrás decide el ritmo durante 1 minuto. Después cambian de lugar.",
+  "30 segundos lento, 30 segundos rápido y se quedan quietos abrazados 30 segundos.",
+  "Mírense a los ojos durante 1 minuto y muévanse muy despacio, con protección.",
+  "Elijan: 90 segundos seguidos o 3 tandas de 30 segundos con pausa. Con protección."
+];
 const PL = { stage: 0, turn: 0, done: 0, used: {}, pose: null, text: "" };
 
 function uniq(list, key) {
@@ -1210,7 +1430,7 @@ function pathStart() {
 }
 function pathDraw() {
   if (PL.stage < 4) { PL.pose = null; PL.text = uniq(PATH[PL.stage].t, "s" + PL.stage); }
-  else { PL.pose = uniq(BANK.pose[1].concat(BANK.pose[2]), "final"); PL.text = PL.pose.n + ": " + PL.pose.t; }
+  else { PL.pose = uniq(BANK.pose[2], "final"); PL.text = PL.pose.n + ": " + PL.pose.t + " " + uniq(FINAL_TASKS, "ft"); }
   pathRender();
 }
 function pathRender() {
@@ -1225,6 +1445,7 @@ function pathRender() {
   const text = $("pText");
   text.textContent = PL.text;
   text.classList.toggle("long", PL.text.length > 110);
+  text.classList.toggle("xlong", PL.text.length > 200);
   $("pInfo").hidden = !fin;
   $("pActs").hidden = fin;
   $("pFinal").hidden = !fin;
