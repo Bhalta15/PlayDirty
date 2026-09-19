@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#140F26">
+<title>Noche de retos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#140F26;
+  --panel:#211843;
+  --panel-2:#2C2158;
+  --ink:#F4ECFF;
+  --muted:#A99BC9;
+  --on:#1A0F2E;
+  --l0:#B9A8FF;
+  --l1:#FFB04A;
+  --l2:#FF3D6E;
+  --display:'Bricolage Grotesque','Trebuchet MS',system-ui,sans-serif;
+  --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--body);
+  min-height:100dvh;-webkit-tap-highlight-color:transparent;
+}
+main{max-width:480px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 20px max(28px,env(safe-area-inset-bottom))}
+[hidden]{display:none !important}
+h1,h2{font-family:var(--display);margin:0;line-height:1.05}
+h1{font-size:clamp(2.4rem,11vw,3.2rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.25rem;font-weight:800}
+p{margin:0}
+.lead{color:var(--muted);margin-top:10px;line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0}
+:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+/* ---------- setup ---------- */
+.block{margin-top:26px}
+.block > label,.block > .lbl{display:block;font-weight:600;margin-bottom:10px}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=text],input[type=password],select{
+  width:100%;background:var(--panel);border:2px solid transparent;border-radius:14px;
+  padding:14px 14px;font-size:1rem;
+}
+input:focus,select:focus{border-color:var(--l0);outline:none}
+.levels{display:grid;gap:10px}
+.lv{
+  text-align:left;background:var(--panel);border-radius:16px;padding:14px 16px;
+  border:2px solid transparent;display:flex;gap:14px;align-items:center;
+}
+.lv .dot{width:16px;height:16px;border-radius:50%;flex:none}
+.lv b{display:block;font-family:var(--display);font-size:1.1rem}
+.lv span{color:var(--muted);font-size:.9rem}
+.lv[aria-pressed=true]{border-color:currentColor;background:var(--panel-2)}
+.lv[data-l="0"]{color:var(--l0)} .lv[data-l="0"] .dot{background:var(--l0)}
+.lv[data-l="1"]{color:var(--l1)} .lv[data-l="1"] .dot{background:var(--l1)}
+.lv[data-l="2"]{color:var(--l2)} .lv[data-l="2"] .dot{background:var(--l2)}
+.lv b,.lv span{color:var(--ink)} .lv span{color:var(--muted)}
+.check{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border-radius:16px;padding:14px 16px;cursor:pointer}
+.check input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--l1);flex:none}
+.check small{display:block;color:var(--muted);margin-top:2px}
+.rules{background:transparent;border:2px dashed var(--panel-2);border-radius:18px;padding:16px 18px}
+.rules ul{margin:10px 0 0;padding-left:18px;color:var(--muted);line-height:1.55}
+.rules li+li{margin-top:4px}
+.rules b{color:var(--ink)}
+.primary{
+  width:100%;margin-top:26px;background:var(--l2);color:#fff;font-family:var(--display);font-weight:800;
+  font-size:1.2rem;padding:18px;border-radius:18px;
+}
+.primary:active{transform:scale(.98)}
+.linkbtn{background:none;color:var(--muted);text-decoration:underline;text-underline-offset:4px;padding:14px 0;display:block;margin:10px auto 0}
+
+/* ---------- game ---------- */
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.iconbtn{background:var(--panel);width:44px;height:44px;border-radius:14px;font-size:1.1rem;flex:none}
+.turn{text-align:center;flex:1;min-width:0}
+.turn small{color:var(--muted);display:block}
+.turn strong{font-family:var(--display);font-size:1.6rem;font-weight:800;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.seg button{background:var(--panel);border-radius:999px;padding:11px 6px;font-weight:600;border:2px solid transparent}
+.seg button[aria-pressed=true]{color:var(--on)}
+.seg button[data-l="0"][aria-pressed=true]{background:var(--l0)}
+.seg button[data-l="1"][aria-pressed=true]{background:var(--l1)}
+.seg button[data-l="2"][aria-pressed=true]{background:var(--l2);color:#fff}
+
+.stage{margin-top:20px;perspective:1000px}
+.card{
+  --lv:var(--l0);
+  background:var(--lv);color:var(--on);border-radius:30px;padding:26px 26px 28px;
+  min-height:340px;display:flex;flex-direction:column;justify-content:space-between;gap:20px;
+}
+#game[data-level="0"] .card{--lv:var(--l0)}
+#game[data-level="1"] .card{--lv:var(--l1)}
+#game[data-level="2"] .card{--lv:var(--l2);color:#fff}
+.kindrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-height:40px}
+.card .kind{font-weight:600;opacity:.8;padding-top:2px}
+.qbtn{
+  width:40px;height:40px;border-radius:50%;flex:none;background:rgba(0,0,0,.2);color:inherit;
+  font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1;
+}
+#game[data-level="2"] .qbtn{background:rgba(255,255,255,.22)}
+.card .text{
+  font-family:var(--display);font-weight:800;line-height:1.14;letter-spacing:-.01em;
+  font-size:clamp(1.55rem,6.6vw,2.1rem);
+}
+.card .text.long{font-size:clamp(1.3rem,5.4vw,1.7rem)}
+.card.idle .text{font-weight:600;opacity:.9;font-size:clamp(1.3rem,5.4vw,1.7rem)}
+.card.flip{animation:flip .55s cubic-bezier(.3,.7,.2,1)}
+@keyframes flip{from{transform:rotateY(90deg) scale(.96)}to{transform:none}}
+.card.loading .text{opacity:.6}
+.timer{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.timer button{background:rgba(0,0,0,.18);color:inherit;padding:8px 14px;border-radius:999px;font-weight:600}
+#game[data-level="2"] .timer button{background:rgba(255,255,255,.2)}
+.timer output{font-family:var(--display);font-weight:800;font-size:1.6rem;font-variant-numeric:tabular-nums}
+
+.decks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.decks button,.acts button{
+  background:var(--panel);border-radius:18px;padding:16px 10px;font-family:var(--display);font-weight:800;font-size:1.05rem;
+}
+.decks button small{display:block;font-family:var(--body);font-weight:400;color:var(--muted);font-size:.8rem;margin-top:2px}
+.decks button.wide{grid-column:1/-1;background:var(--l2);color:#fff}
+.decks button.wide small{color:rgba(255,255,255,.85)}
+.decks button:disabled,.acts button:disabled{opacity:.5}
+.acts{display:grid;gap:10px;margin-top:16px}
+.acts .ok{background:var(--ink);color:var(--on)}
+.acts .ghost{font-family:var(--body);font-weight:600;color:var(--muted);background:transparent;border:2px solid var(--panel-2)}
+.safe{color:var(--muted);text-align:center;font-size:.88rem;margin-top:18px;line-height:1.45}
+
+/* ---------- dialog ---------- */
+dialog{background:var(--panel);color:var(--ink);border:0;border-radius:24px;padding:22px;width:min(440px,92vw);max-height:92dvh}
+dialog::backdrop{background:rgba(8,5,20,.75)}
+dialog form{display:grid;gap:14px}
+dialog .note{color:var(--muted);font-size:.9rem;line-height:1.5}
+dialog a{color:var(--l1)}
+.row{display:flex;gap:10px}
+.row button{flex:1;padding:14px;border-radius:14px;font-weight:600;background:var(--panel-2)}
+.row .save{background:var(--l1);color:var(--on)}
+#aiStatus{min-height:1.2em;font-size:.9rem}
+
+/* ---------- info de la pose ---------- */
+#poseDlg .body{display:grid;gap:14px}
+.art{background:var(--bg);border-radius:18px;padding:10px}
+.art svg{display:block;width:100%;height:auto}
+.art .furn{fill:var(--panel-2)}
+.art .furn2{fill:none;stroke:#4A3D80;stroke-width:6;stroke-linecap:round}
+.art .wall{fill:none;stroke:#5A4B9A;stroke-width:8;stroke-linecap:round}
+.art .mirror{fill:#3A2F70;stroke:#5A4B9A;stroke-width:3}
+.art .pillow{fill:#5A4B9A}
+.art .drop{fill:none;stroke:#7FB8FF;stroke-width:3;stroke-linecap:round}
+.legend{display:flex;gap:16px;color:var(--muted);font-size:.85rem;align-items:center;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+#poseSteps{margin:0;padding-left:22px;line-height:1.55}
+#poseSteps li+li{margin-top:6px}
+#poseNote{background:var(--panel-2);border-radius:14px;padding:12px 14px;font-size:.92rem;line-height:1.45}
+#poseDlg{overflow:auto}
+#poseDlg .close{width:100%;margin-top:14px;padding:14px;border-radius:14px;font-weight:600;background:var(--l1);color:var(--on)}
+
+/* ---------- minijuegos ---------- */
+.decks button.mini{grid-column:1/-1;background:var(--panel-2)}
+.menu{display:grid;gap:12px;margin-top:22px}
+.gamebtn{text-align:left;background:var(--panel);border-radius:20px;padding:18px 18px 20px;border:2px solid var(--panel-2)}
+.gamebtn b{display:block;font-family:var(--display);font-size:1.3rem}
+.gamebtn span{display:block;color:var(--muted);font-size:.92rem;line-height:1.45;margin-top:4px}
+#minis .card{--lv:var(--l1)}
+#minis .card.boom{--lv:var(--l2);color:#fff}
+#minis .card.s0{--lv:var(--l0)}
+#minis .card.s1{--lv:var(--l1)}
+#minis .card.s2{--lv:var(--l2);color:#fff}
+#minis .card.s2 .qbtn{background:rgba(255,255,255,.22)}
+#minis .card .extra{font-weight:600;line-height:1.35;background:rgba(0,0,0,.14);border-radius:14px;padding:12px 14px}
+#minis .card.boom .extra{background:rgba(255,255,255,.2)}
+.score{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.score span{background:var(--panel);border-radius:999px;padding:8px 14px;font-weight:600;font-size:.9rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:16px}
+.grid button{aspect-ratio:1;background:var(--panel);border-radius:14px;font-family:var(--display);font-weight:800;font-size:1.15rem}
+.grid button:disabled{opacity:.15;cursor:default}
+.grid button:not(:disabled):active{transform:scale(.94);background:var(--panel-2)}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:18px}
+.steps i{height:6px;border-radius:3px;background:var(--panel-2)}
+.steps i.on{background:var(--l1)}
+
+.toast{
+  position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:var(--ink);color:var(--on);padding:12px 18px;border-radius:999px;font-weight:600;
+  max-width:90vw;text-align:center;z-index:10;
+}
+@media (prefers-reduced-motion:reduce){.card.flip{animation:none}.primary:active{transform:none}}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ===================== PREPARAR ===================== -->
+<section id="setup">
+  <h1>Noche de retos</h1>
+  <p class="lead">Retos y poses para dos, con cartas que suben de temperatura. Todo es opcional y se puede saltar.</p>
+
+  <div class="block">
+    <label for="n1">¿Quiénes juegan?</label>
+    <div class="names">
+      <input type="text" id="n1" placeholder="Tu nombre" maxlength="14" autocomplete="off">
+      <input type="text" id="n2" placeholder="Tu pareja" maxlength="14" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="block">
+    <span class="lbl">¿Con qué nivel empiezan?</span>
+    <div class="levels" id="levelPick">
+      <button class="lv" data-l="0" aria-pressed="true"><i class="dot"></i><div><b>Suave</b><span>Besos, mimos y toques que ella o él elija</span></div></button>
+      <button class="lv" data-l="1" aria-pressed="false"><i class="dot"></i><div><b>Picante</b><span>Ropa de menos, vendas y retos atrevidos</span></div></button>
+      <button class="lv" data-l="2" aria-pressed="false"><i class="dot"></i><div><b>Intenso</b><span>Sin ropa, con control y para prenderse de verdad</span></div></button>
+    </div>
+  </div>
+
+  <div class="block">
+    <label class="check">
+      <input type="checkbox" id="auto" checked>
+      <span>Subir el nivel poco a poco<small>Cada 4 turnos sube un nivel, hasta Intenso.</small></span>
+    </label>
+  </div>
+
+  <div class="block rules">
+    <h2>Antes de empezar</h2>
+    <ul>
+      <li><b>Todo es opcional.</b> Cualquiera puede pasar una carta cuando quiera.</li>
+      <li>Hablen antes de sus <b>límites</b>: lo que sí, lo que no y lo que quizá. Los retos de "no puedes negarte" y los de zonas íntimas se cumplen solo dentro de eso.</li>
+      <li>Elijan juntos una <b>palabra segura</b>. Si alguien la dice, se para todo.</li>
+      <li>Nada de dolor real, nada que no les guste y nada de fotos ni videos.</li>
+      <li>Si algo no se siente bien, se cambia de carta y ya.</li>
+    </ul>
+  </div>
+
+  <button class="primary" id="start">Empezar</button>
+  <button class="linkbtn" id="openAI">Conectar IA de Gemini (opcional)</button>
+</section>
+
+<!-- ===================== JUEGO ===================== -->
+<section id="game" data-level="0" hidden>
+  <div class="top">
+    <button class="iconbtn" id="back" aria-label="Volver al inicio">←</button>
+    <div class="turn"><small>Le toca a</small><strong id="who"></strong></div>
+    <button class="iconbtn" id="gear" aria-label="Ajustes de IA">✦</button>
+  </div>
+
+  <div class="seg" id="seg" role="group" aria-label="Nivel">
+    <button data-l="0" aria-pressed="true">Suave</button>
+    <button data-l="1" aria-pressed="false">Picante</button>
+    <button data-l="2" aria-pressed="false">Intenso</button>
+  </div>
+
+  <div class="stage">
+    <div class="card idle" id="card" aria-live="polite">
+      <div class="kindrow">
+        <p class="kind" id="kind"></p>
+        <button class="qbtn" id="info" aria-label="Cómo se hace esta pose" hidden>?</button>
+      </div>
+      <p class="text" id="text"></p>
+      <div class="timer" id="timer" hidden>
+        <button data-s="30">30 s</button>
+        <button data-s="60">1 min</button>
+        <button data-s="120">2 min</button>
+        <output id="clock" aria-live="off"></output>
+      </div>
+    </div>
+  </div>
+
+  <div class="decks" id="decks">
+    <button data-t="reto">Reto<small>Algo que hacer</small></button>
+    <button data-t="pose">Pose<small>Una idea para probar</small></button>
+    <button data-t="sorpresa" class="wide">Sorpréndeme<small>Que decida la suerte</small></button>
+    <button id="openMinis" class="mini">Minijuegos<small>La bomba de números y Camino al final</small></button>
+  </div>
+
+  <div class="acts" id="acts" hidden>
+    <button class="ok" id="done">Hecho, sigue tu pareja</button>
+    <button id="pass">Paso, me toca un castigo</button>
+    <button class="ghost" id="skip">Mejor otra carta sin castigo</button>
+  </div>
+
+  <div class="acts" id="actsPun" hidden>
+    <button class="ok" id="donePun">Cumplido, sigue tu pareja</button>
+    <button class="ghost" id="skipPun">No quiero, saltar sin castigo</button>
+  </div>
+
+  <p class="safe">Si algo no te late, di la palabra segura y paramos.</p>
+</section>
+
+<!-- ===================== MINIJUEGOS ===================== -->
+<section id="minis" hidden>
+  <div class="top">
+    <button class="iconbtn" id="miniBack" aria-label="Volver">←</button>
+    <div class="turn"><small>Minijuegos</small><strong id="miniTitle">Elige un juego</strong></div>
+    <span class="iconbtn" aria-hidden="true" style="visibility:hidden"></span>
+  </div>
+
+  <div class="menu" id="miniMenu">
+    <button class="gamebtn" data-g="bomb"><b>La bomba</b><span>Hay un número secreto escondido. Por turnos eligen un número y la app dice si el secreto es más alto o más bajo. Quien pesca la bomba pierde y se quita una prenda, cada vez más.</span></button>
+    <button class="gamebtn" data-g="path"><b>Camino al final</b><span>Cinco etapas que suben el calor: besos, manos, menos ropa, boca y el final, con una pose para terminar en la cama.</span></button>
+  </div>
+
+  <div id="bomb" hidden>
+    <div class="score" id="bScore"></div>
+    <div class="stage">
+      <div class="card" id="bCard" aria-live="polite">
+        <p class="kind" id="bKind"></p>
+        <p class="text" id="bText"></p>
+        <p class="extra" id="bExtraTxt" hidden></p>
+      </div>
+    </div>
+    <div class="grid" id="bGrid"></div>
+    <div class="acts" id="bActs" hidden>
+      <button class="ok" id="bNext">Otra ronda</button>
+      <button id="bExtra">Castigo extra</button>
+      <button class="ghost" id="bEnd">Terminar el juego</button>
+    </div>
+  </div>
+
+  <div id="path" hidden>
+    <div class="steps" id="pSteps"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="stage">
+      <div class="card s0" id="pCard" aria-live="polite">
+        <div class="kindrow">
+          <p class="kind" id="pKind"></p>
+          <button class="qbtn" id="pInfo" aria-label="Cómo se hace esta pose" hidden>?</button>
+        </div>
+        <p class="text" id="pText"></p>
+      </div>
+    </div>
+    <div class="acts" id="pActs">
+      <button class="ok" id="pDone">Hecho, sigue tu pareja</button>
+      <button id="pOther">Otra tarea de esta etapa</button>
+      <button class="ghost" id="pSkip">Subir a la siguiente etapa</button>
+    </div>
+    <div class="acts" id="pFinal" hidden>
+      <button class="ok" id="pAnother">Otra pose</button>
+      <button class="ghost" id="pEnd">Terminar el juego</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== INFO DE POSE ===================== -->
+<dialog id="poseDlg">
+  <div>
+    <div class="body">
+      <h2 id="poseName"></h2>
+      <div class="art" id="poseArt"></div>
+      <div class="legend"><span><i style="background:var(--l1)"></i>Una persona</span><span><i style="background:var(--l0)"></i>La otra</span><span>Cambien de lugar cuando quieran</span></div>
+      <ol id="poseSteps"></ol>
+      <p id="poseNote" hidden></p>
+      <p class="note">El dibujo es solo un esquema para ubicarse. Ajusten con almohadas y avísense si algo no se siente bien.</p>
+    </div>
+    <button type="button" class="close" id="poseClose">Entendido</button>
+  </div>
+</dialog>
+
+<!-- ===================== AJUSTES IA ===================== -->
+<dialog id="aiDlg">
+  <form method="dialog" id="aiForm">
+    <h2>IA de Gemini</h2>
+    <p class="note">Con IA, cada carta se inventa al momento y nunca se repite. Sin IA, la app usa su baraja integrada (funciona sin internet).</p>
+    <label class="check">
+      <input type="checkbox" id="useAI">
+      <span>Usar IA para crear cartas<small>Si falla, usa la baraja integrada.</small></span>
+    </label>
+    <div>
+      <label for="apiKey" style="font-weight:600;display:block;margin-bottom:8px">Tu clave de API</label>
+      <input type="password" id="apiKey" placeholder="Pega aquí tu clave" autocomplete="off">
+      <p class="note" style="margin-top:8px">Gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Se guarda solo en este dispositivo.</p>
+    </div>
+    <div>
+      <label for="model" style="font-weight:600;display:block;margin-bottom:8px">Modelo</label>
+      <select id="model">
+        <option value="gemini-2.5-flash">Gemini 2.5 Flash (mejor calidad)</option>
+        <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (más límite gratis)</option>
+      </select>
+    </div>
+    <p id="aiStatus" class="note" role="status"></p>
+    <div class="row">
+      <button type="button" id="testAI">Probar</button>
+      <button type="submit" class="save" id="saveAI" value="ok">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+
+/* ===================== BARAJA INTEGRADA ===================== */
+/* BANK[tipo][nivel] = lista de cartas. Niveles: 0 Suave, 1 Picante, 2 Intenso.
+   Las poses son objetos: n nombre, a dibujo, t descripción, s pasos, c cuidado. */
+const LV = ["Suave", "Picante", "Intenso"];
+const P = (n, a, t, s, c) => ({ n, a, t, s, c: c || "" });
+
+const BANK = {
+  reto: [
+    [
+      "Dale a tu pareja un beso largo de 30 segundos sin parar.",
+      "Tu pareja elige una parte de tu cuerpo (que no sea íntima) y te toca y besa ahí durante 1 minuto. No puedes negarte.",
+      "Susúrrale al oído lo que más te gusta de su cuerpo.",
+      "Dale un masaje de cuello y hombros durante 2 minutos y termina con un beso lento en el cuello.",
+      "Bailen pegaditos una canción completa, sin separar el abrazo.",
+      "Mírense a los ojos 1 minuto en silencio. Quien se ría o desvíe la mirada le debe un beso al otro donde diga.",
+      "Tu pareja elige dónde quiere tus manos durante 1 minuto (espalda, cintura, cuello) y tú te dejas guiar.",
+      "Quítale los zapatos a tu pareja y dale un masaje de pies con besitos en los tobillos.",
+      "Besa a tu pareja en 5 lugares distintos que ella o él elija, de la cintura para arriba.",
+      "Abraza a tu pareja por detrás, pega tu cuerpo al suyo y cuéntale al oído lo que te imaginas esta noche.",
+      "Quítale a tu pareja una prenda ligera (calcetines, suéter, chamarra) con calma y sin dejar de mirarle a los ojos.",
+      "Deja que tu pareja te bese el cuello durante 1 minuto sin que puedas moverte.",
+      "Siéntate en las piernas de tu pareja y dale besos lentos durante 1 minuto.",
+      "Dibuja con un dedo un camino de caricias por el brazo, el hombro y el cuello de tu pareja. Que adivine hacia dónde vas.",
+      "Dile a tu pareja tres cosas que le harías en cuanto termine el juego, cada una acompañada de un beso.",
+      "Dale un beso en cada dedo de la mano de tu pareja y sube por el brazo hasta el cuello, muy despacio.",
+      "Acuéstense abrazados con la luz baja y cuéntense en voz baja la vez que más se desearon."
+    ],
+    [
+      "Quítale una prenda a tu pareja usando solo la boca.",
+      "Tu pareja elige una prenda tuya y te la quitas despacio, mirándole a los ojos.",
+      "Baila sensual para tu pareja y quítate una prenda al terminar la canción.",
+      "Véndale los ojos a tu pareja y bésala donde quieras. Tiene que adivinar dónde.",
+      "Pasa un hielo por el cuello de tu pareja y sigue el camino con besos.",
+      "Dale un masaje con aceite o crema en la espalda durante 3 minutos, cada vez más lento y más abajo.",
+      "Besa a tu pareja desde el cuello hasta el ombligo, lo más lento que puedas.",
+      "Quédate en ropa interior frente a tu pareja y date una vuelta lenta para que te vea completo o completa.",
+      "Tu pareja elige dónde quiere que la o lo toques y por cuánto tiempo (máximo 2 minutos), incluso una zona íntima por encima de la ropa interior. No puedes negarte, dentro de lo acordado.",
+      "Con los ojos vendados, deja que tu pareja te bese donde quiera durante 2 minutos, sin que puedas tocarla.",
+      "Susúrrale a tu pareja lo que le harías más tarde, con detalle, durante 1 minuto entero.",
+      "Juego de caliente y frío: con los ojos vendados, tu pareja te busca con los labios siguiendo tus pistas.",
+      "Quítale la prenda de arriba a tu pareja con los dientes o con los labios, sin usar las manos.",
+      "Bésala o bésalo sin usar las manos durante 1 minuto, mientras tu pareja te acaricia como quiera.",
+      "Tu pareja elige: o se quita ella misma una prenda, o te quita una a ti. Lo que elija, lo hace lento.",
+      "Cuéntale en voz baja tu fantasía más atrevida. Tu pareja decide si la cumplen esta noche.",
+      "Recorre el cuerpo de tu pareja con la punta de los dedos a un centímetro de la piel, sin tocarla, durante 1 minuto. Termina con un beso donde más se le antoje.",
+      "Quítate la prenda de arriba bailando y aviéntasela a tu pareja.",
+      "Besa a tu pareja por encima de la ropa interior, en el lugar que ella o él elija, durante 1 minuto.",
+      "Recorre con la lengua la parte interna de los muslos de tu pareja, muy despacio, durante 1 minuto.",
+      "Tu pareja elige: te quita la ropa interior o se la quitas tú. Sea como sea, con toda la calma del mundo.",
+      "Con los ojos vendados, adivina qué te pasa tu pareja por el cuerpo: hielo, un beso, sus dedos o su lengua.",
+      "Muérdele suave a tu pareja el cuello, las orejas y los hombros durante 1 minuto, mientras se queda quieto o quieta.",
+      "Besa el pecho de tu pareja durante 1 minuto (encima de la ropa o sin ella, como ella o él elija).",
+      "Baila pegado o pegada a tu pareja, rozándola despacio, hasta que te diga basta.",
+      "Dile a tu pareja qué parte suya se te antoja besar primero, y bésala ahí con calma."
+    ],
+    [
+      "Estriptis lento de 1 minuto con la canción que elija tu pareja, hasta donde tú decidas llegar.",
+      "Quítate toda la ropa de un jalón, sin dudar, y quédate frente a tu pareja 30 segundos. Ella o él decide qué pasa después.",
+      "Tu pareja elige una prenda tuya y te la quitas. Después tú eliges dos de ella o él.",
+      "Quédate en ropa interior y siéntate frente a tu pareja, que te mira sin poder tocarte durante 1 minuto.",
+      "Tu pareja te venda los ojos y lleva el control durante 5 minutos, con toques, besos y lo que quiera dentro de lo acordado. No puedes negarte.",
+      "Durante 3 minutos solo uno toca y el otro no puede moverse ni hablar. Después cambian.",
+      "Baila y quítate cada prenda hasta quedarte sin nada. Termina sentado o sentada en las piernas de tu pareja.",
+      "Tu pareja te pide algo, dentro de lo acordado, y lo cumples sin preguntar. Después pides tú.",
+      "Semáforo: uno guía con verde, amarillo o rojo mientras el otro se mueve, durante 3 minutos.",
+      "Acuéstate y deja que tu pareja te recorra con besos siguiendo el camino que tú le indiques.",
+      "Desnúdense el uno al otro, prenda por prenda, sin apuro y sin apartar la mirada.",
+      "5 minutos de juegos previos, con todo lo que quieran, y el control cambia de manos cada minuto.",
+      "Recorre el cuerpo de tu pareja con hielo y después con la boca tibia, sin dejar zona sin cubrir, íntimas incluidas (dentro de lo acordado).",
+      "Tu pareja elige un lugar de la habitación que no sea la cama (sillón, pared, escritorio) y ahí les toca cumplir este reto.",
+      "Ponte de espaldas, deja que tu pareja te quite la última prenda y quédate quieto o quieta mientras te recorre a besos.",
+      "Dile a tu pareja lo que más quieres que te haga ahora mismo, sin pena. Ella o él responde: sí, no o después.",
+      "Reto del espejo: desnúdense frente al espejo y mírense mientras se acarician, durante 2 minutos.",
+      "Uno queda sin ropa y el otro lo recorre con besos durante 3 minutos. Después cambian.",
+      "Quien saque esta carta es el dueño o la dueña de la noche por 5 minutos: decide, pide, y el otro cumple, dentro de lo acordado.",
+      "Vendas, manos y solo la voz de tu pareja como guía: te dice cada cosa que hará antes de hacerla, durante 3 minutos.",
+      "Tu pareja elige una zona íntima tuya y la besa y la lame durante 2 minutos. Tú solo respiras y te dejas. Después cambian.",
+      "Sin ropa, acuéstate y deja que tu pareja te recorra de los pies a la cabeza con la lengua, sin saltarse ninguna zona (dentro de lo acordado).",
+      "Dale a tu pareja 3 minutos de sexo oral mientras ella o él te guía con palabras. Después cambian.",
+      "Con la venda puesta, tu pareja te toca con la mano, la boca y la lengua donde quiera, y tú adivinas qué es cada cosa.",
+      "Toca a tu pareja con las manos donde más le gusta durante 3 minutos, y cuando diga «ahí», te quedas ahí.",
+      "Muéstrale a tu pareja cómo te gusta que te toquen, con tu propia mano, durante 2 minutos. Ella o él mira sin tocar y después toma el relevo.",
+      "Besa, lame y muerde suave la parte del cuerpo de tu pareja que más se le antoje, mientras ella o él marca el ritmo con la mano en tu cabeza.",
+      "Quédense en ropa interior y frótense despacio uno contra el otro durante 3 minutos, sin quitarse nada, hasta que uno diga «ya».",
+      "Dile a tu pareja, en voz baja y con detalle, lo que le vas a hacer en la próxima hora. Y empieza por lo primero.",
+      "Tu pareja elige tres zonas de tu cuerpo, una de ellas íntima, y las besas 30 segundos cada una sin usar las manos.",
+      "Ponte de rodillas frente a tu pareja y pídele permiso para tocarla y besarla donde quieras. Ella o él te lo concede paso a paso.",
+      "Ronda de placer: tu pareja se recuesta y decide cómo y dónde quiere recibir caricias durante 5 minutos. Tú se las das sin pausa.",
+      "Cierren los ojos y exploren el cuerpo del otro solo con manos y labios durante 3 minutos, sin decir una palabra."
+    ]
+  ],
+  pose: [
+    [
+      P("Cucharita", "cuchara", "De lado y bien pegados, uno detrás del otro, con abrazo y besos en la nuca.",
+        ["Acuéstense de lado mirando hacia el mismo lado.", "Quien va detrás abraza por la cintura y pega el pecho a la espalda del otro.", "Respiren al mismo ritmo y sigan con besos en cuello, hombro y nuca."],
+        "Una almohada entre las rodillas se siente mejor."),
+      P("Cara a cara", "frente", "Acostados de lado, frente a frente, con las piernas entrelazadas y besos lentos.",
+        ["Acuéstense de lado mirándose.", "Entrelacen una pierna con la del otro.", "Bésense sin prisa; las manos exploran espalda y cintura."]),
+      P("Pecho con pecho", "encima", "Uno boca arriba y el otro encima, pecho contra pecho, con besos y respiración lenta.",
+        ["Uno se acuesta boca arriba.", "El otro se recuesta encima, pecho con pecho.", "Bésense y acaríciense el cuello y la cara."],
+        "Quien va arriba apoya codos o rodillas para no cargar todo el peso."),
+      P("Abrazo sentado", "loto", "Sentados frente a frente, con las piernas de uno rodeando al otro, en un abrazo largo.",
+        ["Uno se sienta con las piernas cruzadas o estiradas.", "El otro se sienta encima, de frente, y rodea con las piernas.", "Abrácense fuerte y bésense muy despacio."]),
+      P("Espalda con espalda", "espalda", "Sentados en el piso, recargados el uno en el otro, susurrándose cosas al oído.",
+        ["Siéntense en el piso dándose la espalda.", "Recuéstense uno contra el otro para sentir el calor.", "Volteen la cabeza y susúrrense lo que se les antoja."]),
+      P("Entre tus piernas", "entrePiernas", "Uno sentado entre las piernas del otro, de espaldas, con caricias lentas y besos en el cuello.",
+        ["Uno se sienta con las piernas abiertas.", "El otro se sienta enfrente, de espaldas, recargado en su pecho.", "Quien está detrás abraza, acaricia y besa el cuello."]),
+      P("Baile pegados", "atras", "De pie, uno detrás del otro, con las manos en la cintura y besos en el cuello.",
+        ["Párense uno detrás del otro, de preferencia frente al espejo.", "Quien está detrás rodea la cintura con las manos.", "Muévanse despacio al ritmo de una canción."]),
+      P("Masaje sensual", "masaje", "Uno boca abajo y el otro sentado sobre su espalda, con un masaje lento que baja poco a poco.",
+        ["Uno se acuesta boca abajo.", "El otro se sienta sobre su espalda baja, sin cargar peso.", "Masajea hombros, espalda y cintura, cada vez más despacio."],
+        "Con aceite o crema se siente mejor."),
+      P("Beso contra la pared", "pared", "De pie, con la espalda de uno contra la pared y un beso profundo con las manos libres.",
+        ["Uno se recarga en la pared.", "El otro se pega de frente.", "Bésense con calma y dejen que las manos exploren."]),
+      P("En tu regazo", "silla", "Uno sentado en una silla y el otro sobre sus piernas, de lado, con besos y caricias en la cara.",
+        ["Uno se sienta en una silla firme o el sillón.", "El otro se sienta de lado sobre sus piernas.", "Abrácense por el cuello y bésense despacio."])
+    ],
+    [
+      P("La silla", "silla", "Uno sentado en una silla firme y el otro encima, de frente. Besos y caricias durante 2 minutos.",
+        ["Uno se sienta en una silla sin ruedas.", "El otro se sienta encima, de frente, con las piernas a los lados.", "Abrácense, bésense y muévanse lento."],
+        "Que la silla sea firme y sin ruedas."),
+      P("Contra la pared", "pared", "De pie, con un beso apasionado y las manos libres para explorar todo el cuerpo.",
+        ["Uno se apoya con la espalda en la pared.", "El otro se pega de frente, con una pierna entre las del otro.", "Besos profundos y manos por todos lados."]),
+      P("El masaje que baja", "masaje", "Uno boca abajo y el otro sentado sobre su espalda, con un masaje que baja hasta los glúteos y los muslos.",
+        ["Uno se acuesta boca abajo, sin ropa si quiere.", "El otro empieza en los hombros y baja por la espalda.", "Sigue por los glúteos y la parte interna de los muslos, cada vez más lento."],
+        "Con aceite o crema se siente increíble. Que sea cálido, no frío."),
+      P("Abrazo por detrás", "entrePiernas", "Sentados en el piso, uno entre las piernas del otro y de espaldas, con caricias lentas por todo el cuerpo.",
+        ["Uno se sienta con las piernas abiertas.", "El otro se sienta enfrente, de espaldas, y se recarga.", "Quien va detrás recorre pecho, cintura y muslos con las manos."]),
+      P("La orilla", "borde", "Uno boca arriba en la orilla de la cama con las piernas colgando y el otro de pie frente a él o ella.",
+        ["Uno se acuesta con la cadera en el borde de la cama.", "El otro se para frente, entre sus piernas.", "Besos y caricias en el vientre y los muslos, con el ritmo que quieran."]),
+      P("Cucharita profunda", "cuchara", "Como la cucharita, pero más pegados, con una pierna sobre la cadera del otro.",
+        ["Acuéstense de lado, uno detrás del otro.", "Quien va detrás sube una pierna sobre la cadera del otro.", "Muévanse lento y acaríciense por el frente."]),
+      P("De espaldas sobre ti", "sillaEspalda", "Uno sentado y el otro sobre sus piernas, de espaldas, recargado en su pecho, con manos por todo el cuerpo.",
+        ["Uno se sienta en el sillón o en la cama.", "El otro se sienta sobre sus piernas, dándole la espalda.", "Quien va detrás recorre pecho, vientre y muslos, y besa el cuello."]),
+      P("La tijera", "tijera", "Acostados en forma de X, con las piernas entrelazadas y los cuerpos muy pegados, moviéndose lento.",
+        ["Uno se acuesta de lado, el otro se acuesta de lado en sentido contrario.", "Acerquen las caderas y entrelacen las piernas.", "Muévanse despacio y acaríciense las piernas y la cintura."],
+        "Si se les entumen las piernas, cambien de lado."),
+      P("Sobre el escritorio", "escritorio", "Uno sentado en el borde de una mesa firme y el otro de pie frente a él o ella, con besos y manos por todos lados.",
+        ["Uno se sienta en el borde de un escritorio o mesa firme.", "El otro se para entre sus piernas.", "Besos, caricias y las piernas rodeando la cintura."],
+        "La mesa tiene que ser firme y estable."),
+      P("Rodillas en el sillón", "rodillas", "Uno de rodillas en el sillón con las manos en el respaldo y el otro detrás, con besos en la espalda y la nuca.",
+        ["Uno se arrodilla en el sillón mirando al respaldo.", "El otro se coloca detrás, de pie o de rodillas.", "Besos en la nuca y la espalda, y manos en la cintura."]),
+      P("Bajo la regadera", "ducha", "Pegados bajo el agua tibia, con jabón, besos y caricias resbalosas.",
+        ["Métanse juntos al agua tibia.", "Enjabónense el uno al otro despacio.", "Besos contra la pared con el agua cayendo."],
+        "Tapete antiderrapante y mucho cuidado al moverse."),
+      P("El sándwich", "encima", "Uno acostado y el otro encima, pecho con pecho, con las piernas entrelazadas y las manos explorando.",
+        ["Uno se acuesta boca arriba.", "El otro se acuesta encima, con las piernas entre las suyas.", "Besos largos y manos por la espalda y la cintura."]),
+      P("Pierna sobre la cadera", "frente", "Acostados de frente, con una pierna de uno sobre la cadera del otro, muy pegados.",
+        ["Acuéstense de lado mirándose.", "Uno sube una pierna sobre la cadera del otro.", "Muévanse despacio y bésense sin apartar la mirada."]),
+      P("La mecedora", "loto", "Sentados de frente y muy pegados, meciéndose lento como en una mecedora.",
+        ["Uno se sienta con las piernas cruzadas.", "El otro se sienta encima, de frente.", "Muévanse hacia adelante y hacia atrás con calma y respiren juntos."]),
+      P("Manos a la pared", "paredEspalda", "Uno con las manos apoyadas en la pared y el otro pegado por detrás, con besos en la nuca y la espalda.",
+        ["Uno apoya las manos en la pared, con los pies separados.", "El otro se pega por detrás.", "Besos en el cuello y manos que recorren el cuerpo."]),
+      P("Cojín bajo la cadera", "puente", "Uno boca arriba con un cojín bajo la cadera y el otro frente a él o ella, con caricias y besos.",
+        ["Uno se acuesta boca arriba con una almohada bajo la cadera.", "El otro se arrodilla frente, entre sus piernas.", "Caricias y besos en el vientre, la cadera y los muslos."])
+    ],
+    [
+      P("El loto", "loto", "Sentados frente a frente, con las piernas entrelazadas y abrazados fuerte, moviéndose muy lento y mirándose a los ojos.",
+        ["Uno se sienta con las piernas cruzadas.", "El otro se sienta encima, de frente, y rodea con las piernas.", "Abrácense fuerte, muévanse lento y no dejen de mirarse."]),
+      P("La amazona", "amazona", "Uno acostado y el otro encima, de frente. Quien está arriba lleva el ritmo y el de abajo se deja llevar.",
+        ["Uno se acuesta boca arriba.", "El otro se sienta encima, de frente, con las rodillas a los lados.", "Quien está arriba marca el ritmo y las manos exploran."]),
+      P("La amazona invertida", "amazonaInv", "Como la amazona, pero quien está arriba mira hacia los pies del otro.",
+        ["Uno se acuesta boca arriba.", "El otro se sienta encima, de espaldas.", "Quien está arriba se inclina o se recarga hacia atrás y lleva el ritmo."],
+        "Si a quien está abajo le incomoda, se cambia sin problema."),
+      P("El puente", "puente", "Uno boca arriba con las caderas elevadas sobre una almohada y el otro frente a él o ella. Cambien de ritmo cada 30 segundos.",
+        ["Uno se acuesta boca arriba con la cadera sobre almohadas.", "El otro se arrodilla frente a él o ella.", "Cambien el ritmo cada 30 segundos: lento, intenso, pausa y otra vez."]),
+      P("La silla del deseo", "sillaEspalda", "Uno sentado en una silla firme y el otro encima, de espaldas y frente al espejo si hay uno.",
+        ["Uno se sienta en una silla firme, de frente al espejo si se puede.", "El otro se sienta encima, de espaldas y recargado.", "Muévanse despacio mirando el reflejo."]),
+      P("A cuatro apoyos", "rodillas", "De rodillas sobre la cama con los antebrazos apoyados, y el otro por detrás. Una almohada abajo ayuda a estar cómodos.",
+        ["Uno se pone de rodillas y apoya los antebrazos en la cama.", "El otro se arrodilla detrás, con las manos en su cintura.", "Quien va detrás marca un ritmo suave y quien va adelante avisa si quiere más."],
+        "Una almohada bajo las rodillas o el pecho ayuda."),
+      P("Contra la pared, en brazos", "cargado", "De pie contra la pared, con uno sosteniendo al otro. Solo si los dos tienen fuerza y se sienten seguros.",
+        ["Uno se recarga en la pared.", "El otro lo sostiene por los muslos y la cadera.", "La otra persona rodea con las piernas y los brazos."],
+        "Solo si los dos se sienten seguros. Si cansa, se baja sin drama."),
+      P("La ola", "cuchara", "Cucharita con movimiento lento y ondulante, con la mano del que está detrás explorando todo lo que quiera.",
+        ["Acuéstense de lado en cucharita.", "Muévanse en ondas lentas, como el oleaje.", "Quien va detrás recorre pecho, vientre y muslos con la mano."]),
+      P("69 de lado", "lateral", "Acostados de lado, cabeza con cadera, con almohadas para estar cómodos, con calma y comunicación.",
+        ["Acuéstense de lado, uno con la cabeza hacia los pies del otro.", "Pongan una almohada bajo la cabeza para no forzar el cuello.", "Sigan el ritmo del otro y avisen si quieren cambiar."]),
+      P("Cascada", "ducha", "En la ducha, contra la pared bajo el agua tibia, con tapete antiderrapante.",
+        ["Uno se recarga en la pared de la ducha.", "El otro se pega de frente, bajo el agua.", "Besos, jabón y manos por todo el cuerpo."],
+        "Tapete antiderrapante y mucho cuidado al moverse."),
+      P("Doble reflejo", "rodillas", "Uno de rodillas en el sillón o la cama, el otro de pie detrás, mirando el reflejo de los dos.",
+        ["Coloquen el espejo de frente.", "Uno se arrodilla en el sillón y el otro se para detrás.", "Mírense en el espejo mientras se mueven."]),
+      P("Piernas al hombro", "borde", "En la orilla de la cama, uno boca arriba y el otro de pie frente a él o ella, con las piernas sobre sus hombros.",
+        ["Uno se acuesta con la cadera en el borde.", "El otro se para frente y sube sus piernas a sus hombros.", "Marquen el ritmo juntos y cambien de altura si hace falta."],
+        "No fuercen la flexibilidad; si molesta, bajen las piernas."),
+      P("Sobre la mesa", "escritorio", "Uno sentado en el borde de una mesa firme, con las piernas alrededor del otro, que está de pie.",
+        ["Uno se sienta en el borde de una mesa firme.", "El otro se para entre sus piernas.", "Con las piernas alrededor de su cadera, marquen el ritmo."],
+        "Mesa firme y estable, sin nada encima."),
+      P("Manos a la pared, de espaldas", "paredEspalda", "Uno con las manos apoyadas en la pared y el otro por detrás, con las manos en la cadera.",
+        ["Uno apoya las manos en la pared, con las piernas ligeramente abiertas.", "El otro se pega por detrás y sostiene su cadera.", "Cambien el ritmo con lo que se digan al oído."]),
+      P("La mecedora sobre silla", "silla", "Uno sentado en una silla y el otro encima, de frente, meciéndose.",
+        ["Uno se sienta en una silla firme.", "El otro se sienta encima, de frente.", "Mézanse hacia adelante y atrás, agarrados del cuello."],
+        "Silla firme, sin ruedas."),
+      P("Tijera profunda", "tijera", "Acostados de lado en forma de X, con las piernas muy entrelazadas y las caderas pegadas.",
+        ["Acuéstense en sentido contrario, de lado.", "Acerquen las caderas y crucen las piernas.", "Muévanse despacio y cambien de lado a los pocos minutos."]),
+      P("Cucharita abierta", "cuchara", "Cucharita con una pierna levantada, con más contacto y con la mano libre explorando.",
+        ["Acuéstense de lado en cucharita.", "Quien va adelante sube una pierna un poco.", "Muévanse con calma y ajusten con una almohada."]),
+      P("El nudo", "frente", "De lado, cara a cara, con las piernas y los brazos entrelazados y muy pegados.",
+        ["Acuéstense de lado mirándose.", "Entrelacen ambas piernas y abracen fuerte.", "Muevan la cadera despacio sin separar los cuerpos."]),
+      P("El arco", "puente", "Uno boca arriba con la espalda arqueada y el otro sosteniéndole la cadera.",
+        ["Uno se acuesta boca arriba con las rodillas dobladas.", "El otro se arrodilla entre sus piernas y le sostiene la cadera.", "Quien está abajo arquea la espalda un poco si le es cómodo."],
+        "No arqueen de más; si la espalda molesta, se baja."),
+      P("La cascada del borde", "borde", "Uno boca arriba con la cabeza colgando ligeramente por el borde de la cama y el otro de pie.",
+        ["Uno se acuesta con la cabeza cerca del borde.", "El otro se para al lado y explora con manos y boca.", "Avisen si la cabeza cuelga demasiado."],
+        "Cuello bien apoyado siempre, nunca colgado de más."),
+      P("El trono", "silla", "Uno sentado en el sillón como en un trono y el otro de rodillas o encima, de frente.",
+        ["Uno se sienta en el sillón con la espalda recta.", "El otro se arrodilla frente a él o sube a su regazo.", "Cambien de posición cuando quieran."]),
+      P("Ritmo cambiante", "amazona", "Elijan una postura que ya les guste y cambien el ritmo cada 30 segundos: lento, intenso, pausa y otra vez.",
+        ["Elijan una postura que ya conocen.", "Pongan un cronómetro de 30 segundos.", "En cada vuelta cambien el ritmo: lento, intenso, pausa."]),
+      P("Doble abrazo de pie", "atras", "De pie frente al espejo, uno detrás del otro, con una mano en la cadera y la otra explorando.",
+        ["Párense frente al espejo, uno detrás del otro.", "Quien va detrás rodea con un brazo y baja la otra mano despacio.", "Miren el reflejo y cambien el ritmo con lo que se susurren."]),
+      P("Beso profundo en pared", "cargado", "De pie contra la pared, con uno sosteniendo al otro por la cadera, con besos profundos.",
+        ["Uno se apoya en la pared.", "El otro lo sostiene por la cadera y lo pega a la pared.", "Besos profundos y manos por el cuello y el pecho."],
+        "Solo si los dos se sienten cómodos y seguros.")
+    ]
+  ],
+  castigo: [
+    [
+      "Dile 3 cumplidos a tu pareja con voz de locutor de radio.",
+      "Prepara un snack o una bebida para tu pareja y sírvela con reverencia.",
+      "Baila de la forma más ridícula que puedas durante 20 segundos.",
+      "Dale a tu pareja 1 minuto de masaje de pies.",
+      "Recibe 10 cosquillas de tu pareja sin poder quejarte.",
+      "Deja que tu pareja te bese el cuello durante 30 segundos sin moverte.",
+      "Dale a tu pareja un beso apasionado de 20 segundos.",
+      "Tu pareja elige dónde recibe un beso tuyo, y tú aceptas.",
+      "Abraza a tu pareja por detrás 30 segundos y susúrrale lo que más te gusta de ella o él.",
+      "Dale a tu pareja tres besos: uno en la frente, uno en el cuello y uno donde ella o él elija.",
+      "Confiésale a tu pareja una fantasía suave y ciérrala con un beso lento.",
+      "Dale a tu pareja un masaje de manos de 1 minuto, con toda la atención."
+    ],
+    [
+      "Quítate una prenda a elección de tu pareja.",
+      "1 minuto de besos en el cuello de tu pareja sin usar las manos.",
+      "En tu próximo turno juegas con los ojos vendados.",
+      "Dile en voz alta y sin pena algo atrevido que quieras hacer esta noche.",
+      "Quédate en ropa interior hasta que termine la siguiente ronda.",
+      "Deja que tu pareja te toque donde quiera durante 1 minuto, sin protestar (dentro de lo acordado).",
+      "Baila sexy durante 30 segundos y quítate una prenda al terminar.",
+      "Tu pareja te quita una prenda usando solo la boca.",
+      "Deja que tu pareja te bese por encima de la ropa interior donde quiera durante 30 segundos.",
+      "Tu pareja te toca donde quiera, una zona íntima incluida (por encima de la ropa), durante 1 minuto.",
+      "Quítate una prenda a elección de tu pareja y baila 20 segundos sin ella.",
+      "Con los ojos vendados, adivina tres cosas que te pase tu pareja por el cuerpo: hielo, un beso o una caricia.",
+      "Besa y lame el cuello y la oreja de tu pareja durante 1 minuto mientras te sostiene de la cintura.",
+      "Susúrrale a tu pareja qué le harías si estuvieran sin reglas, con todo detalle.",
+      "Quédate sin la prenda de arriba y deja que tu pareja te bese el pecho durante 1 minuto.",
+      "Muérdele suave a tu pareja el labio, el cuello y el hombro, uno por uno."
+    ],
+    [
+      "Tu pareja elige otra prenda tuya y te toca quitártela ahora mismo.",
+      "Quítate toda la ropa de un jalón y quédate así durante una ronda completa.",
+      "Obedece a tu pareja durante 2 minutos en lo que pida, siempre dentro de lo acordado.",
+      "Te vendan los ojos y tu pareja te da 1 minuto de besos y caricias sin que puedas moverte.",
+      "Tu pareja escoge tu próximo reto y no puedes cambiarlo.",
+      "Estriptis de 30 segundos para tu pareja, con la música que ella o él elija.",
+      "Tú eliges: quedarte sin ropa durante 2 turnos, o hacer lo que tu pareja pida durante 1 minuto.",
+      "Reparte 10 besos en 10 lugares distintos del cuerpo de tu pareja, que ella o él elija.",
+      "Tu pareja elige una zona íntima tuya y la besa y la lame durante 1 minuto. No te puedes negar (dentro de lo acordado).",
+      "Quítate la ropa interior y quédate así durante las próximas dos rondas.",
+      "Recibe 1 minuto de caricias en las zonas íntimas mientras tu pareja te mira a los ojos, sin poder apartar la mirada.",
+      "Dale a tu pareja 1 minuto de sexo oral con el ritmo que ella o él te marque.",
+      "Tu pareja te pone en la postura que elija y te mantiene ahí 2 minutos con besos y caricias.",
+      "Estriptis en cámara lenta de 1 minuto, y termina sentado o sentada en las piernas de tu pareja.",
+      "Recorre el cuerpo de tu pareja con la lengua, de los hombros a los muslos, sin dejar zona sin cubrir (dentro de lo acordado).",
+      "Vendado o vendada, recibe 3 minutos de lo que tu pareja decida, dentro de lo acordado.",
+      "Pídele a tu pareja, sin pena y en voz alta, dónde quieres sentir su boca. Ella o él lo cumple durante 1 minuto.",
+      "Tu pareja te toca una zona íntima de su elección con la mano durante 2 minutos, y tú no puedes hacer ruido.",
+      "Besa y muerde suave los muslos, el vientre y la cadera de tu pareja durante 2 minutos, siguiendo sus indicaciones.",
+      "Baila sin ropa para tu pareja hasta que se acabe la canción.",
+      "Cumples un deseo que tu pareja te susurre al oído, dentro de lo acordado.",
+      "Siéntate en las piernas de tu pareja, sin ropa arriba, y bésala o bésalo durante 1 minuto sin usar las manos."
+    ]
+  ]
+};
+
+
+/* ===================== ILUSTRACIONES (monitos esquemáticos) ===================== */
+/* Cada plantilla: fondo (bg) + dos figuras {c: color 0/1, h: cabeza, l: líneas} */
+const ART = {
+  cuchara: { bg: '<rect x="14" y="40" width="292" height="112" rx="16" class="furn"/>',
+    f: [ {c:0,h:[62,80],l:[[[74,81],[150,81]],[[86,82],[106,94],[130,100]],[[150,81],[186,90],[170,104]]]},
+         {c:1,h:[74,116],l:[[[86,116],[162,116]],[[98,116],[118,102],[140,90]],[[162,116],[198,124],[180,138]]]} ] },
+  frente: { bg: '<rect x="14" y="40" width="292" height="112" rx="16" class="furn"/>',
+    f: [ {c:0,h:[60,80],l:[[[72,81],[150,81]],[[84,82],[104,98],[126,106]],[[150,81],[190,96],[236,114]]]},
+         {c:1,h:[60,116],l:[[[72,116],[150,116]],[[84,116],[104,100],[126,92]],[[150,116],[190,100],[236,82]]]} ] },
+  encima: { bg: '<rect x="14" y="132" width="292" height="30" rx="12" class="furn"/>',
+    f: [ {c:0,h:[52,124],l:[[[64,124],[170,124]],[[170,124],[215,124],[262,124]],[[90,122],[108,100]]]},
+         {c:1,h:[74,88],l:[[[86,94],[172,102]],[[172,102],[218,108],[262,110]],[[96,96],[76,116]]]} ] },
+  silla: { bg: '<path d="M96 60V166M96 128H176M176 128V166" class="furn2"/>',
+    f: [ {c:0,h:[120,58],l:[[[120,70],[122,118]],[[122,118],[168,120],[170,164]],[[122,80],[150,92],[172,82]]]},
+         {c:1,h:[168,42],l:[[[166,54],[160,104]],[[160,104],[130,114],[124,150]],[[164,64],[144,64],[132,70]]]} ] },
+  sillaEspalda: { bg: '<path d="M96 60V166M96 128H196M196 128V166" class="furn2"/>',
+    f: [ {c:0,h:[120,58],l:[[[120,70],[122,118]],[[122,118],[178,120],[180,164]],[[122,80],[146,92],[164,88]]]},
+         {c:1,h:[150,44],l:[[[152,56],[158,100]],[[158,100],[200,108],[204,150]],[[152,66],[176,74],[188,88]]]} ] },
+  loto: { bg: '<rect x="20" y="150" width="280" height="14" rx="7" class="furn"/>',
+    f: [ {c:0,h:[128,64],l:[[[130,76],[138,128]],[[138,128],[170,146],[200,144]],[[132,88],[156,98],[178,90]]]},
+         {c:1,h:[192,64],l:[[[190,76],[182,128]],[[182,128],[150,146],[120,144]],[[188,88],[164,98],[142,90]]]} ] },
+  pared: { bg: '<path d="M262 20V166" class="wall"/>',
+    f: [ {c:0,h:[246,52],l:[[[250,64],[252,114]],[[252,114],[248,142],[250,166]],[[252,114],[244,142],[236,166]],[[248,74],[226,86],[214,82]]]},
+         {c:1,h:[204,54],l:[[[208,66],[218,114]],[[218,114],[212,142],[208,166]],[[218,114],[232,140],[230,166]],[[210,76],[232,88],[244,84]]]} ] },
+  paredEspalda: { bg: '<path d="M282 20V166" class="wall"/>',
+    f: [ {c:0,h:[246,62],l:[[[240,72],[210,116]],[[210,116],[214,166]],[[210,116],[228,166]],[[240,76],[262,86],[278,84]]]},
+         {c:1,h:[180,48],l:[[[184,60],[194,110]],[[194,110],[186,166]],[[194,110],[208,166]],[[186,70],[206,86],[218,98]]]} ] },
+  ducha: { bg: '<path d="M262 20V166" class="wall"/><path d="M230 22H262" class="furn2"/><path d="M212 40l-4 12M224 42l-4 12M236 40l-4 12M200 56l-4 12M214 58l-4 12M228 56l-4 12" class="drop"/>',
+    f: [ {c:0,h:[246,64],l:[[[250,76],[252,122]],[[252,122],[248,146],[250,166]],[[252,122],[244,146],[236,166]],[[248,86],[226,98],[214,94]]]},
+         {c:1,h:[204,66],l:[[[208,78],[218,122]],[[218,122],[212,146],[208,166]],[[218,122],[232,144],[230,166]],[[210,88],[232,100],[244,96]]]} ] },
+  rodillas: { bg: '<rect x="14" y="150" width="292" height="18" rx="9" class="furn"/>',
+    f: [ {c:0,h:[86,96],l:[[[98,102],[164,104]],[[104,104],[104,148]],[[164,104],[164,140],[196,148]]]},
+         {c:1,h:[214,58],l:[[[214,70],[204,118]],[[204,118],[196,146],[232,148]],[[210,80],[186,96],[168,104]]]} ] },
+  amazona: { bg: '<rect x="14" y="146" width="292" height="18" rx="9" class="furn"/>',
+    f: [ {c:0,h:[52,136],l:[[[64,138],[150,138]],[[150,138],[196,136],[248,138]],[[70,138],[96,122]]]},
+         {c:1,h:[162,52],l:[[[162,64],[160,112]],[[160,112],[136,124],[130,142]],[[160,112],[190,124],[196,142]],[[162,74],[140,92],[118,112]]]} ] },
+  amazonaInv: { bg: '<rect x="14" y="146" width="292" height="18" rx="9" class="furn"/>',
+    f: [ {c:0,h:[52,136],l:[[[64,138],[150,138]],[[150,138],[196,136],[248,138]],[[70,138],[96,122]]]},
+         {c:1,h:[210,72],l:[[[198,80],[162,112]],[[162,112],[136,124],[130,142]],[[162,112],[190,124],[196,142]],[[196,84],[216,104],[236,126]]]} ] },
+  puente: { bg: '<rect x="14" y="150" width="292" height="16" rx="8" class="furn"/><rect x="130" y="130" width="46" height="20" rx="10" class="pillow"/>',
+    f: [ {c:0,h:[50,140],l:[[[62,140],[100,138],[150,120]],[[150,120],[186,130],[192,146]],[[68,140],[92,124]]]},
+         {c:1,h:[236,60],l:[[[234,72],[236,118]],[[236,118],[222,146],[252,146]],[[234,82],[208,106],[178,120]]]} ] },
+  borde: { bg: '<rect x="14" y="116" width="160" height="14" rx="7" class="furn"/><rect x="24" y="130" width="10" height="36" class="furn"/><rect x="154" y="130" width="10" height="36" class="furn"/>',
+    f: [ {c:0,h:[44,102],l:[[[56,104],[156,104]],[[156,104],[194,90],[214,66]]]},
+         {c:1,h:[244,42],l:[[[244,54],[242,108]],[[242,108],[232,166]],[[242,108],[256,166]],[[244,64],[220,82],[200,80]]]} ] },
+  atras: { bg: '<rect x="30" y="26" width="52" height="132" rx="8" class="mirror"/>',
+    f: [ {c:0,h:[150,50],l:[[[150,62],[152,112]],[[152,112],[146,166]],[[152,112],[164,166]],[[150,72],[168,92],[178,108]]]},
+         {c:1,h:[184,44],l:[[[182,56],[184,112]],[[184,112],[178,166]],[[184,112],[198,166]],[[182,66],[164,90],[156,104]]]} ] },
+  masaje: { bg: '<rect x="14" y="146" width="292" height="18" rx="9" class="furn"/>',
+    f: [ {c:0,h:[52,136],l:[[[64,138],[160,138]],[[160,138],[250,138]],[[72,140],[90,148]]]},
+         {c:1,h:[150,48],l:[[[150,60],[150,112]],[[150,112],[124,128],[122,144]],[[150,112],[176,128],[178,144]],[[150,70],[126,92],[104,110]]]} ] },
+  espalda: { bg: '<rect x="20" y="152" width="280" height="12" rx="6" class="furn"/>',
+    f: [ {c:0,h:[142,60],l:[[[144,72],[148,122]],[[148,122],[112,138],[84,146]],[[146,82],[122,100],[102,110]]]},
+         {c:1,h:[178,60],l:[[[176,72],[172,122]],[[172,122],[208,138],[236,146]],[[174,82],[198,100],[218,110]]]} ] },
+  entrePiernas: { bg: '<rect x="20" y="152" width="280" height="12" rx="6" class="furn"/>',
+    f: [ {c:1,h:[222,50],l:[[[222,62],[226,118]],[[226,118],[186,126],[136,140]],[[226,118],[196,146],[152,152]],[[224,72],[204,92],[186,104]]]},
+         {c:0,h:[176,70],l:[[[178,82],[188,128]],[[188,128],[158,146],[126,150]]]} ] },
+  tijera: { bg: '<rect x="14" y="40" width="292" height="112" rx="16" class="furn"/>',
+    f: [ {c:0,h:[50,80],l:[[[62,81],[140,81]],[[140,81],[178,100],[228,116]],[[76,82],[98,98],[120,104]]]},
+         {c:1,h:[270,116],l:[[[258,116],[180,116]],[[180,116],[142,98],[92,84]],[[244,116],[222,100],[200,94]]]} ] },
+  lateral: { bg: '<rect x="14" y="40" width="292" height="112" rx="16" class="furn"/>',
+    f: [ {c:0,h:[92,80],l:[[[104,81],[184,81]],[[184,81],[226,74],[262,86]],[[110,84],[134,98],[156,106]]]},
+         {c:1,h:[228,116],l:[[[216,116],[136,116]],[[136,116],[96,122],[58,112]],[[210,114],[186,102],[166,94]]]} ] },
+  cargado: { bg: '<path d="M282 20V166" class="wall"/>',
+    f: [ {c:0,h:[214,52],l:[[[216,64],[210,112]],[[210,112],[202,166]],[[210,112],[224,166]],[[216,74],[240,96],[252,110]]]},
+         {c:1,h:[262,44],l:[[[260,56],[256,100]],[[256,100],[232,112],[236,142]],[[256,100],[240,122],[244,146]],[[260,66],[240,62],[226,66]]]} ] },
+  escritorio: { bg: '<rect x="70" y="116" width="120" height="10" rx="4" class="furn"/><rect x="78" y="126" width="8" height="40" class="furn"/><rect x="174" y="126" width="8" height="40" class="furn"/>',
+    f: [ {c:0,h:[132,54],l:[[[132,66],[134,110]],[[134,110],[176,112]],[[132,76],[156,88],[180,80]]]},
+         {c:1,h:[214,46],l:[[[212,58],[202,106]],[[202,106],[196,166]],[[202,106],[216,166]],[[210,68],[190,86],[178,84]]]} ] }
+};
+
+function artSVG(key) {
+  const T = ART[key] || ART.frente;
+  const col = ["var(--l1)", "var(--l0)"];
+  let s = '<svg viewBox="0 0 320 190" role="img" aria-label="Ilustración esquemática de la postura" xmlns="http://www.w3.org/2000/svg">' + T.bg;
+  T.f.forEach((f) => {
+    f.l.forEach((pl) => {
+      s += '<polyline points="' + pl.map((p) => p.join(",")).join(" ") +
+        '" fill="none" stroke="' + col[f.c] + '" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>';
+    });
+    s += '<circle cx="' + f.h[0] + '" cy="' + f.h[1] + '" r="11" fill="' + col[f.c] + '"/>';
+  });
+  return s + "</svg>";
+}
+
+
+/* ===================== ESTADO ===================== */
+const S = {
+  names: ["", ""],
+  turn: 0,
+  level: 0,
+  auto: true,
+  count: 0,
+  used: {},
+  history: [],
+  mode: "pick", // pick | card | punish
+  card: null,   // { type, text, pose }
+  busy: false,
+  useAI: false,
+  key: "",
+  model: "gemini-2.5-flash"
+};
+
+const $ = (id) => document.getElementById(id);
+const el = {
+  setup: $("setup"), game: $("game"), n1: $("n1"), n2: $("n2"),
+  who: $("who"), card: $("card"), kind: $("kind"), text: $("text"), info: $("info"),
+  timer: $("timer"), clock: $("clock"), decks: $("decks"),
+  acts: $("acts"), actsPun: $("actsPun"), seg: $("seg"),
+  dlg: $("aiDlg"), useAI: $("useAI"), apiKey: $("apiKey"), model: $("model"), aiStatus: $("aiStatus"),
+  poseDlg: $("poseDlg")
+};
+
+/* ===================== ALMACENAMIENTO (tolerante a fallos) ===================== */
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key);
+    localStorage.setItem(key, val);
+  } catch (e) { /* sin almacenamiento: no pasa nada */ }
+  return null;
+}
+S.key = store("nr_key") || "";
+S.model = store("nr_model") || S.model;
+S.useAI = store("nr_useai") === "1" && !!S.key;
+
+/* ===================== UTILIDADES ===================== */
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+const other = () => 1 - S.turn;
+const nameOf = (i) => (S.names[i] || (i === 0 ? "Jugador 1" : "Jugador 2"));
+
+function pickLocal(type, level) {
+  const list = BANK[type][level];
+  const k = type + level;
+  S.used[k] = S.used[k] || [];
+  if (S.used[k].length >= list.length) S.used[k] = [];
+  let i;
+  do { i = Math.floor(Math.random() * list.length); } while (S.used[k].includes(i));
+  S.used[k].push(i);
+  return list[i];
+}
+
+/* ===================== GEMINI ===================== */
+const ART_KEYS = Object.keys(ART);
+const ART_HELP = {
+  cuchara: "acostados de lado, uno detrás del otro",
+  frente: "acostados de lado, cara a cara, piernas entrelazadas",
+  encima: "uno boca arriba y el otro encima, pecho con pecho",
+  silla: "uno sentado en silla y el otro encima, de frente",
+  sillaEspalda: "uno sentado en silla y el otro encima, de espaldas",
+  loto: "sentados frente a frente, piernas alrededor",
+  pared: "de pie contra la pared, de frente",
+  paredEspalda: "uno con las manos en la pared y el otro detrás",
+  ducha: "de pie en la ducha contra la pared",
+  rodillas: "uno de rodillas o a cuatro apoyos y el otro detrás",
+  amazona: "uno acostado y el otro encima, de frente",
+  amazonaInv: "uno acostado y el otro encima, de espaldas",
+  puente: "uno boca arriba con la cadera elevada y el otro frente",
+  borde: "uno boca arriba en la orilla de la cama y el otro de pie",
+  atras: "de pie, uno detrás del otro, frente al espejo",
+  masaje: "uno boca abajo y el otro sentado sobre su espalda",
+  espalda: "sentados espalda con espalda",
+  entrePiernas: "uno sentado entre las piernas del otro, de espaldas",
+  tijera: "acostados en X con las piernas cruzadas",
+  lateral: "acostados de lado, cabeza con cadera",
+  cargado: "de pie contra la pared, uno sosteniendo al otro",
+  escritorio: "uno sentado en una mesa y el otro de pie frente"
+};
+
+const TYPE_DESC = {
+  reto: "un reto sensual y atrevido entre los dos: quitarse una prenda (que elija el otro, con la boca, bailando, de un jalón), quedarse en ropa interior o sin nada, vendas en los ojos, hielo, besos, tocar, besar o lamer donde elija el otro (zonas íntimas incluidas en Picante e Intenso), dejar que el otro tenga el control o cumplir lo que pida sin poder negarse (dentro de lo acordado)",
+  pose: "una postura o posición para probar juntos, con nombre llamativo (silla, loto, amazona, tijera, ducha, espejo, pared, borde de la cama...), descrita en tono sugerente, con cómo se hace paso a paso y una nota de comodidad o cuidado si es exigente",
+  castigo: "una penitencia atrevida y coqueta para quien decidió pasar una carta (quitarse ropa, quedarse en ropa interior, obedecer un rato, jugar con los ojos vendados, besos, caricias, lamer o tocar donde elija el otro, zonas íntimas incluidas en Picante e Intenso)"
+};
+const LEVEL_DESC = [
+  "Suave: coqueto y cálido. Besos, abrazos, masajes y tocar una zona no íntima que elija el otro. Enciende el ambiente sin pasarse.",
+  "Picante: atrevido y sensual. Quitarse prendas, ropa interior, vendas, hielo, besos y caricias donde el otro elija, incluso zonas íntimas por encima de la ropa interior, control por turnos.",
+  "Intenso: muy atrevido, erótico y apasionado. Quedarse sin nada, quitarse todo de un jalón, estriptis, dejar que el otro mande, tocar, besar o lamer zonas íntimas, sexo oral, juegos previos largos. Sin lenguaje vulgar ni descripciones anatómicas gráficas."
+];
+
+async function askGemini(type, level) {
+  const isPose = type === "pose";
+  const sys =
+    "Eres el animador de un juego de cartas para una pareja de adultos (22 años o más) que ya están juntos y disfrutan una noche privada en un hotel, con total consentimiento. " +
+    "Escribe en español de México, con tono cómplice, sexy y divertido. " +
+    "Reglas: la carta se dirige al jugador en turno y llama a la otra persona 'tu pareja'. Máximo 2 oraciones cortas. " +
+    "Nada de dolor real, humillación, terceras personas, alcohol en exceso, sustancias, riesgos físicos, fotos ni videos, ni objetos raros: solo lo que hay en un cuarto de hotel. " +
+    "Puedes usar frases tipo 'sin poder negarte' siempre que agregues 'dentro de lo que acordaron'. Todo debe poder saltarse. " +
+    (isPose
+      ? "Responde SOLO un JSON con esta forma: {\"nombre\":\"nombre corto de la pose\",\"texto\":\"descripción sugerente en 1 o 2 oraciones\",\"pasos\":[\"paso 1\",\"paso 2\",\"paso 3\"],\"cuidado\":\"nota corta de comodidad o cuidado, o cadena vacía\",\"dibujo\":\"una de estas claves: " +
+        ART_KEYS.map((k) => k + " (" + ART_HELP[k] + ")").join("; ") + "\"}"
+      : "Responde SOLO un JSON con esta forma: {\"texto\":\"...\"}");
+  const recent = S.history.slice(-10).join(" | ");
+  const user =
+    "Jugador en turno: " + nameOf(S.turn) + ". Su pareja: " + nameOf(other()) + ".\n" +
+    "Tipo de carta: " + TYPE_DESC[type] + ".\n" +
+    "Nivel: " + LEVEL_DESC[level] + "\n" +
+    (recent ? "No repitas ideas parecidas a estas cartas recientes: " + recent : "");
+
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/" +
+    encodeURIComponent(S.model) + ":generateContent?key=" + encodeURIComponent(S.key);
+  const body = {
+    systemInstruction: { parts: [{ text: sys }] },
+    contents: [{ role: "user", parts: [{ text: user }] }],
+    generationConfig: {
+      temperature: 1.1,
+      responseMimeType: "application/json",
+      thinkingConfig: { thinkingBudget: 0 }
+    }
+  };
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), 12000);
+  try {
+    const r = await fetch(url, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body), signal: ctrl.signal
+    });
+    if (!r.ok) {
+      let detail = "";
+      try { detail = (await r.json()).error.message; } catch (e) {}
+      throw new Error("Error " + r.status + (detail ? ": " + detail : ""));
+    }
+    const data = await r.json();
+    const raw = data.candidates && data.candidates[0] && data.candidates[0].content &&
+      data.candidates[0].content.parts.map((p) => p.text || "").join("");
+    if (!raw) throw new Error("Gemini no devolvió una carta (puede haberla bloqueado).");
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const j = JSON.parse(clean);
+    if (!j.texto || typeof j.texto !== "string") throw new Error("Respuesta con formato raro.");
+    if (!isPose) return { texto: j.texto.trim() };
+
+    const nombre = (typeof j.nombre === "string" && j.nombre.trim()) || "Pose nueva";
+    const pasos = Array.isArray(j.pasos) ? j.pasos.filter((x) => typeof x === "string" && x.trim()).map((x) => x.trim()) : [];
+    return {
+      texto: nombre + ": " + j.texto.trim(),
+      pose: {
+        n: nombre,
+        t: j.texto.trim(),
+        s: pasos.length ? pasos : [j.texto.trim()],
+        c: typeof j.cuidado === "string" ? j.cuidado.trim() : "",
+        a: ART[j.dibujo] ? j.dibujo : "frente"
+      }
+    };
+  } finally {
+    clearTimeout(to);
+  }
+}
+
+/* ===================== PANTALLAS ===================== */
+function setLevelUI() {
+  el.game.dataset.level = S.level;
+  el.seg.querySelectorAll("button").forEach((b) =>
+    b.setAttribute("aria-pressed", String(+b.dataset.l === S.level)));
+}
+
+function renderGame() {
+  el.who.textContent = nameOf(S.turn);
+  setLevelUI();
+  stopTimer();
+  el.card.classList.remove("loading");
+
+  const inPick = S.mode === "pick";
+  el.decks.hidden = !inPick;
+  el.acts.hidden = S.mode !== "card";
+  el.actsPun.hidden = S.mode !== "punish";
+
+  if (inPick) {
+    el.card.classList.add("idle");
+    el.kind.textContent = "Nivel " + LV[S.level];
+    el.text.textContent = "Elige un mazo y saca una carta, " + nameOf(S.turn) + ".";
+    el.text.classList.remove("long");
+    el.timer.hidden = true;
+    el.info.hidden = true;
+  } else {
+    el.card.classList.remove("idle");
+    const label = { reto: "Reto", pose: "Pose", castigo: "Castigo" }[S.card.type];
+    el.kind.textContent = label + " de nivel " + LV[S.level];
+    el.text.textContent = S.card.text;
+    el.text.classList.toggle("long", S.card.text.length > 130);
+    el.timer.hidden = !(S.card.type === "reto" || S.card.type === "castigo" || S.card.type === "pose");
+    el.info.hidden = !(S.card.type === "pose" && S.card.pose);
+  }
+}
+
+function flip() {
+  el.card.classList.remove("flip");
+  void el.card.offsetWidth;
+  el.card.classList.add("flip");
+}
+
+async function draw(type, punish) {
+  if (S.busy) return;
+  if (type === "sorpresa") type = Math.random() < 0.6 ? "reto" : "pose";
+  S.busy = true;
+  document.querySelectorAll(".decks button, .acts button").forEach((b) => (b.disabled = true));
+  el.card.classList.add("loading");
+  el.info.hidden = true;
+  el.text.textContent = S.useAI ? "Pensando algo bueno…" : "…";
+
+  let text = "", pose = null;
+  if (S.useAI && S.key) {
+    try {
+      const r = await askGemini(type, S.level);
+      text = r.texto; pose = r.pose || null;
+    } catch (e) {
+      console.error(e);
+      toast("La IA no respondió, uso una carta de la baraja.");
+    }
+  }
+  if (!text) {
+    const it = pickLocal(type, S.level);
+    if (type === "pose") { pose = it; text = it.n + ": " + it.t; }
+    else text = it;
+  }
+
+  S.history.push(text);
+  S.card = { type, text, pose };
+  S.mode = punish ? "punish" : "card";
+  S.busy = false;
+  document.querySelectorAll(".decks button, .acts button").forEach((b) => (b.disabled = false));
+  renderGame();
+  flip();
+}
+
+function nextTurn() {
+  S.turn = other();
+  S.count += 1;
+  S.mode = "pick";
+  S.card = null;
+  if (S.auto && S.count % 4 === 0 && S.level < 2) {
+    S.level += 1;
+    toast("Subimos a nivel " + LV[S.level]);
+  }
+  renderGame();
+}
+
+function backToPick() { S.mode = "pick"; S.card = null; renderGame(); }
+
+/* ---- info de la pose ---- */
+function openPose(p) {
+  if (!p) return;
+  $("poseName").textContent = p.n;
+  $("poseArt").innerHTML = artSVG(p.a); // p.a siempre es una clave validada de ART
+  const ol = $("poseSteps");
+  ol.textContent = "";
+  p.s.forEach((x) => { const li = document.createElement("li"); li.textContent = x; ol.appendChild(li); });
+  const note = $("poseNote");
+  note.textContent = p.c ? "Ojo: " + p.c : "";
+  note.hidden = !p.c;
+  el.poseDlg.showModal();
+}
+
+/* ===================== CRONÓMETRO ===================== */
+let tId = null;
+function fmt(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+function stopTimer() { clearInterval(tId); tId = null; el.clock.textContent = ""; }
+function startTimer(sec) {
+  clearInterval(tId);
+  const end = Date.now() + sec * 1000;
+  const tick = () => {
+    const left = Math.max(0, Math.round((end - Date.now()) / 1000));
+    el.clock.textContent = left > 0 ? fmt(left) : "¡Tiempo!";
+    if (left <= 0) {
+      clearInterval(tId); tId = null;
+      try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch (e) {}
+    }
+  };
+  tick();
+  tId = setInterval(tick, 250);
+}
+
+/* ===================== MINIJUEGOS ===================== */
+const MI = { root: $("minis"), menu: $("miniMenu"), bomb: $("bomb"), path: $("path"), title: $("miniTitle") };
+const MI_TITLES = { menu: "Elige un juego", bomb: "La bomba", path: "Camino al final" };
+let miniView = "menu";
+
+function showMini(view) {
+  miniView = view;
+  MI.menu.hidden = view !== "menu";
+  MI.bomb.hidden = view !== "bomb";
+  MI.path.hidden = view !== "path";
+  MI.title.textContent = MI_TITLES[view];
+  window.scrollTo(0, 0);
+}
+function openMinis() { stopTimer(); el.game.hidden = true; MI.root.hidden = false; showMini("menu"); }
+function closeMinis() { MI.root.hidden = true; el.game.hidden = false; renderGame(); }
+
+/* ---------- La bomba ---------- */
+const BOMB_MAX = 30;
+const B = { secret: 0, low: 1, high: BOMB_MAX, turn: 0, starter: 0, loser: 0, losses: [0, 0], over: false };
+const LADDER = [
+  "Quítate una prenda, la que elija tu pareja.",
+  "Otra prenda más, y esta te la quita tu pareja.",
+  "Quédate en ropa interior si aún no lo estás, y date una vuelta lenta.",
+  "Quítate la siguiente prenda bailando, 20 segundos.",
+  "Quédate sin nada si aún no lo estás, y tu pareja elige qué hacen a continuación.",
+  "Ya sin ropa: cumples lo que tu pareja pida durante 1 minuto, dentro de lo acordado."
+];
+const ladderFor = (n) => LADDER[Math.min(n - 1, LADDER.length - 1)];
+
+function bombStart() {
+  B.losses = [0, 0];
+  B.starter = Math.random() < 0.5 ? 0 : 1;
+  bombRound();
+  showMini("bomb");
+}
+function bombRound() {
+  B.secret = 1 + Math.floor(Math.random() * BOMB_MAX);
+  B.low = 1; B.high = BOMB_MAX;
+  B.turn = B.starter;
+  B.over = false;
+  renderBomb();
+}
+function bombPick(n) {
+  if (B.over) return;
+  if (n === B.secret) {
+    B.over = true; B.loser = B.turn; B.losses[B.loser] += 1;
+    try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch (e) {}
+  } else {
+    if (n < B.secret) B.low = Math.max(B.low, n + 1); else B.high = Math.min(B.high, n - 1);
+    B.turn = 1 - B.turn;
+  }
+  renderBomb();
+}
+function renderBomb() {
+  const sc = $("bScore");
+  sc.textContent = "";
+  [0, 1].forEach((i) => {
+    const s = document.createElement("span");
+    s.textContent = nameOf(i) + ": " + B.losses[i] + (B.losses[i] === 1 ? " pérdida" : " pérdidas");
+    sc.appendChild(s);
+  });
+  const card = $("bCard"), grid = $("bGrid"), text = $("bText");
+  card.classList.toggle("boom", B.over);
+  $("bExtraTxt").hidden = true;
+  grid.textContent = "";
+
+  if (B.over) {
+    grid.hidden = true; $("bActs").hidden = false;
+    $("bKind").textContent = "¡Boom!";
+    text.textContent = nameOf(B.loser) + " pescó el " + B.secret + ". " + ladderFor(B.losses[B.loser]);
+    $("bExtra").disabled = false;
+  } else {
+    grid.hidden = false; $("bActs").hidden = true;
+    $("bKind").textContent = "Le toca a " + nameOf(B.turn);
+    text.textContent = B.low === B.high
+      ? "Solo queda un número y es la bomba. Mala suerte, " + nameOf(B.turn) + "."
+      : "El número secreto está entre " + B.low + " y " + B.high + ". Elige uno sin pescar la bomba.";
+    for (let n = 1; n <= BOMB_MAX; n++) {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = n; b.dataset.n = n;
+      b.setAttribute("aria-label", "Número " + n);
+      b.disabled = n < B.low || n > B.high;
+      grid.appendChild(b);
+    }
+  }
+  text.classList.toggle("long", text.textContent.length > 110);
+}
+
+/* ---------- Camino al final ---------- */
+const PATH = [
+  { n: "Calentando", t: [
+    "Bésale el cuello a tu pareja durante 30 segundos mientras te agarra de la cintura.",
+    "Dale a tu pareja un beso largo y lento en la boca, con las manos en su cara.",
+    "Susúrrale al oído lo que te imaginas hacer más tarde.",
+    "Bailen pegados una canción completa, sin separar los cuerpos.",
+    "Siéntate en las piernas de tu pareja y bésala o bésalo mirándole a los ojos.",
+    "Muérdele suave el labio y el cuello a tu pareja, uno por uno.",
+    "Abraza a tu pareja por detrás y bésale la nuca y los hombros durante 1 minuto.",
+    "Dile a tu pareja lo que más te calienta de ella o él, con un beso después de cada cosa."
+  ] },
+  { n: "Manos", t: [
+    "Acaricia a tu pareja por encima de la ropa: espalda, cintura y muslos, durante 1 minuto, sin prisa.",
+    "Quítale a tu pareja la prenda de arriba, despacio, besando cada parte que descubras.",
+    "Tu pareja elige dónde te toca durante 1 minuto, por encima de la ropa. Tú te dejas.",
+    "Dale un masaje sensual en espalda y hombros y baja poco a poco hasta la cintura.",
+    "Bésale el pecho o el abdomen a tu pareja y mete las manos por debajo de su prenda.",
+    "Tu pareja te venda los ojos y te acaricia durante 1 minuto. Tú adivinas dónde.",
+    "Quítate una prenda mirando a tu pareja y déjala en sus manos.",
+    "Recorre los muslos de tu pareja de las rodillas hacia arriba, muy lento, con un beso al final de cada pasada."
+  ] },
+  { n: "Menos ropa", t: [
+    "Quítale la prenda de arriba a tu pareja usando solo los dientes o los labios.",
+    "Quédate en ropa interior y deja que tu pareja te recorra con la boca de arriba abajo durante 1 minuto.",
+    "Tu pareja elige una prenda tuya y te la quitas bailando.",
+    "Bésale el pecho y el abdomen a tu pareja sin ropa durante 1 minuto, mientras te acaricia el cabello.",
+    "Pasa un hielo por el cuerpo de tu pareja y sigue el camino con la boca tibia.",
+    "Desnúdense el uno al otro, prenda por prenda, sin apartar la mirada.",
+    "Recuéstate y deja que tu pareja te acaricie por encima de la ropa interior durante 1 minuto.",
+    "Con los ojos vendados, deja que tu pareja te bese los muslos, el vientre y la cintura. Adivina por dónde va."
+  ] },
+  { n: "Con la boca", t: [
+    "Besa y lame la zona íntima que tu pareja te indique durante 2 minutos. Ella o él marca el ritmo con palabras.",
+    "Tu pareja te toca con la mano donde más le gusta durante 2 minutos, y tú le dices «así» o «más despacio».",
+    "Dale a tu pareja 2 minutos de sexo oral. Después cambian.",
+    "Recorre a tu pareja de los pies a la cabeza con la lengua, sin dejar zona sin cubrir (dentro de lo acordado).",
+    "Muéstrale a tu pareja cómo te gusta que te toquen, con tu propia mano, mientras ella o él mira. Después toma el relevo.",
+    "Tu pareja te pide dónde quiere tu boca y cuánto tiempo. Lo cumples sin decir palabra.",
+    "Acaríciense y bésense los dos a la vez, cada uno donde más le gusta al otro, durante 2 minutos.",
+    "Sigue el ritmo que te marque tu pareja con la mano en tu cabeza o en tu cadera, hasta que diga «ya»."
+  ] },
+  { n: "El final", t: null }
+];
+const PL = { stage: 0, turn: 0, done: 0, used: {}, pose: null, text: "" };
+
+function uniq(list, key) {
+  const u = PL.used[key] = PL.used[key] || [];
+  if (u.length >= list.length) u.length = 0;
+  let i;
+  do { i = Math.floor(Math.random() * list.length); } while (u.includes(i));
+  u.push(i);
+  return list[i];
+}
+function pathStart() {
+  PL.stage = 0; PL.turn = S.turn; PL.done = 0; PL.used = {}; PL.pose = null;
+  pathDraw();
+  showMini("path");
+}
+function pathDraw() {
+  if (PL.stage < 4) { PL.pose = null; PL.text = uniq(PATH[PL.stage].t, "s" + PL.stage); }
+  else { PL.pose = uniq(BANK.pose[1].concat(BANK.pose[2]), "final"); PL.text = PL.pose.n + ": " + PL.pose.t; }
+  pathRender();
+}
+function pathRender() {
+  const fin = PL.stage === 4;
+  $("pSteps").querySelectorAll("i").forEach((x, i) => x.classList.toggle("on", i <= PL.stage));
+  const card = $("pCard");
+  card.classList.remove("s0", "s1", "s2");
+  card.classList.add(PL.stage <= 1 ? "s0" : PL.stage === 2 ? "s1" : "s2");
+  $("pKind").textContent = fin
+    ? "Etapa 5 de 5: El final. Cuiden el ritmo y tengan protección a la mano."
+    : "Etapa " + (PL.stage + 1) + " de 5: " + PATH[PL.stage].n + ". Le toca a " + nameOf(PL.turn) + ".";
+  const text = $("pText");
+  text.textContent = PL.text;
+  text.classList.toggle("long", PL.text.length > 110);
+  $("pInfo").hidden = !fin;
+  $("pActs").hidden = fin;
+  $("pFinal").hidden = !fin;
+}
+function pathAdvance() {
+  PL.stage += 1; PL.done = 0;
+  toast(PL.stage === 4 ? "Llegaron al final" : "Etapa " + (PL.stage + 1) + ": " + PATH[PL.stage].n);
+}
+
+/* ---------- eventos de minijuegos ---------- */
+$("openMinis").addEventListener("click", openMinis);
+$("miniBack").addEventListener("click", () => { if (miniView === "menu") closeMinis(); else showMini("menu"); });
+MI.menu.addEventListener("click", (e) => {
+  const b = e.target.closest(".gamebtn"); if (!b) return;
+  if (b.dataset.g === "bomb") bombStart(); else pathStart();
+});
+$("bGrid").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || b.disabled) return;
+  bombPick(+b.dataset.n);
+});
+$("bNext").addEventListener("click", () => { B.starter = 1 - B.starter; bombRound(); });
+$("bEnd").addEventListener("click", () => showMini("menu"));
+$("bExtra").addEventListener("click", () => {
+  const n = B.losses[B.loser];
+  const lvl = n >= 4 ? 2 : n >= 2 ? 1 : 0;
+  const x = $("bExtraTxt");
+  x.textContent = "Extra: " + pickLocal("castigo", lvl);
+  x.hidden = false;
+});
+$("pDone").addEventListener("click", () => {
+  PL.done += 1;
+  PL.turn = 1 - PL.turn;
+  if (PL.done >= 4) pathAdvance();
+  pathDraw();
+});
+$("pOther").addEventListener("click", pathDraw);
+$("pSkip").addEventListener("click", () => { pathAdvance(); pathDraw(); });
+$("pAnother").addEventListener("click", pathDraw);
+$("pEnd").addEventListener("click", () => { showMini("menu"); toast("Que lo disfruten"); });
+$("pInfo").addEventListener("click", () => openPose(PL.pose));
+
+/* ===================== EVENTOS ===================== */
+// nivel inicial
+$("levelPick").addEventListener("click", (e) => {
+  const b = e.target.closest(".lv"); if (!b) return;
+  S.level = +b.dataset.l;
+  $("levelPick").querySelectorAll(".lv").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+});
+
+$("start").addEventListener("click", () => {
+  S.names = [el.n1.value.trim(), el.n2.value.trim()];
+  S.auto = $("auto").checked;
+  S.turn = Math.random() < 0.5 ? 0 : 1;
+  S.count = 0; S.used = {}; S.history = []; S.mode = "pick"; S.card = null;
+  el.setup.hidden = true; el.game.hidden = false;
+  renderGame();
+  window.scrollTo(0, 0);
+});
+
+$("back").addEventListener("click", () => {
+  stopTimer();
+  el.game.hidden = true; el.setup.hidden = false;
+});
+
+// nivel durante el juego
+el.seg.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  S.level = +b.dataset.l;
+  if (S.mode === "pick") renderGame(); else setLevelUI();
+});
+
+el.decks.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || !b.dataset.t) return;
+  draw(b.dataset.t, false);
+});
+
+$("done").addEventListener("click", nextTurn);
+$("donePun").addEventListener("click", nextTurn);
+$("skip").addEventListener("click", backToPick);
+$("skipPun").addEventListener("click", nextTurn);
+$("pass").addEventListener("click", () => draw("castigo", true));
+
+el.timer.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  startTimer(+b.dataset.s);
+});
+
+el.info.addEventListener("click", () => openPose(S.card && S.card.pose));
+function closePose() {
+  try { el.poseDlg.close(); } catch (e) { el.poseDlg.removeAttribute("open"); }
+}
+$("poseClose").addEventListener("click", closePose);
+el.poseDlg.addEventListener("click", (e) => { if (e.target === el.poseDlg) closePose(); });
+
+/* ---- ajustes de IA ---- */
+function openAI() {
+  el.useAI.checked = S.useAI;
+  el.apiKey.value = S.key;
+  el.model.value = S.model;
+  el.aiStatus.textContent = "";
+  el.dlg.showModal();
+}
+$("openAI").addEventListener("click", openAI);
+$("gear").addEventListener("click", openAI);
+
+$("testAI").addEventListener("click", async () => {
+  const prevKey = S.key, prevModel = S.model;
+  S.key = el.apiKey.value.trim(); S.model = el.model.value;
+  el.aiStatus.style.color = "var(--muted)";
+  el.aiStatus.textContent = "Probando…";
+  try {
+    const t = await askGemini("reto", 1);
+    el.aiStatus.style.color = "#8be9a8";
+    el.aiStatus.textContent = "Funciona. Ejemplo: " + t.texto;
+  } catch (e) {
+    el.aiStatus.style.color = "#ff8fa6";
+    el.aiStatus.textContent = "No funcionó. " + e.message;
+  } finally {
+    S.key = prevKey; S.model = prevModel;
+  }
+});
+
+el.dlg.addEventListener("close", () => {
+  if (el.dlg.returnValue !== "ok") return;
+  S.key = el.apiKey.value.trim();
+  S.model = el.model.value;
+  S.useAI = el.useAI.checked && !!S.key;
+  store("nr_key", S.key);
+  store("nr_model", S.model);
+  store("nr_useai", S.useAI ? "1" : "0");
+  toast(S.useAI ? "IA activada" : "Usando la baraja integrada");
+});
+el.dlg.addEventListener("click", (e) => { if (e.target === el.dlg) el.dlg.close("cancel"); });
+</script>
+</body>
+</html>
