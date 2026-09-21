@@ -194,15 +194,40 @@ dialog a{color:var(--l1)}
 .grid button{aspect-ratio:1;background:var(--panel);border-radius:14px;font-family:var(--display);font-weight:800;font-size:1.15rem}
 .grid button:disabled{opacity:.15;cursor:default}
 .grid button:not(:disabled):active{transform:scale(.94);background:var(--panel-2)}
-.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:18px}
-.steps i{height:6px;border-radius:3px;background:var(--panel-2)}
-.steps i.on{background:var(--l1)}
 
 .score{flex-wrap:wrap}
 .grid button.def:disabled{opacity:1;background:var(--l2);color:#fff;font-size:1rem}
 .grid button.safe:disabled{opacity:.3}
 #minis .card.boom .timer button{background:rgba(255,255,255,.2)}
 #minis .card.boom .qbtn{background:rgba(255,255,255,.22)}
+/* ---------- mapa del cuerpo ---------- */
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opts.two{grid-template-columns:repeat(2,1fr);margin-top:12px}
+.opts button{background:var(--panel);border-radius:999px;padding:11px 6px;font-weight:600;border:2px solid transparent}
+.opts button[aria-pressed=true]{background:var(--ink);color:var(--on)}
+.fig{background:var(--panel);border-radius:22px;padding:12px 8px;margin-top:14px}
+.fig svg{display:block;height:min(62dvh,540px);width:auto;aspect-ratio:240/440;max-width:100%;margin:0 auto}
+.bodyfill ellipse,.bodyfill rect,.bodyfill path{fill:#3A2F70}
+.bodyfill .hair{fill:var(--panel-2)}
+.limb{fill:none;stroke:#3A2F70;stroke-linecap:round;stroke-linejoin:round}
+.zone{--zc:var(--l0);cursor:pointer}
+.zone.l1{--zc:var(--l1)}
+.zone.l2{--zc:var(--l2)}
+.zone ellipse{fill:var(--zc);fill-opacity:.26;stroke:var(--zc);stroke-width:2;transition:fill-opacity .15s}
+.zone:hover ellipse,.zone:focus-visible ellipse{fill-opacity:.5}
+.zone:focus{outline:none}
+.zone:focus-visible ellipse{stroke:#fff;stroke-width:3}
+.zone.done ellipse{fill-opacity:.55}
+.zone.sel ellipse{fill-opacity:.95}
+.zone.locked{cursor:not-allowed}
+.zone.locked ellipse,.zone.locked:hover ellipse{fill-opacity:.06;stroke:#7A6BB0;stroke-dasharray:3 4}
+.tick{fill:#fff;stroke:#140F26;stroke-width:3;paint-order:stroke;font:800 15px var(--display);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.ideas{display:grid;gap:8px}
+.idea{text-align:left;background:rgba(0,0,0,.14);color:inherit;border-radius:14px;padding:12px 14px;font-weight:600;line-height:1.35}
+.idea.libre{background:transparent;border:2px dashed currentColor}
+#minis .card.s2 .idea{background:rgba(255,255,255,.2)}
+#minis .card.s2 .idea.libre{background:transparent}
+#minis .card.s2 .timer button{background:rgba(255,255,255,.2)}
 .toast{
   position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);
   background:var(--ink);color:var(--on);padding:12px 18px;border-radius:999px;font-weight:600;
@@ -231,7 +256,7 @@ dialog a{color:var(--l1)}
   </div>
 
   <button class="primary" id="start">Jugar con cartas<small>Retos, poses y castigos</small></button>
-  <button class="primary alt" id="startMinis">Minijuegos<small>La bomba y Camino al final</small></button>
+  <button class="primary alt" id="startMinis">Minijuegos<small>La bomba y Mapa del cuerpo</small></button>
   <p class="safe">Antes de jugar, ajusten el nivel de las cartas y lean las reglas aquí abajo.</p>
 
   <div class="block">
@@ -326,7 +351,7 @@ dialog a{color:var(--l1)}
 
   <div class="menu" id="miniMenu">
     <button class="gamebtn" data-g="bomb"><b>La bomba</b><span>Tablero de 30 números tipo buscaminas. Eligen cuántas bombas hay (5, 8 o 12); quien pesca una cumple un castigo especial, ya sin ropa, para calentar antes de irse a la cama.</span></button>
-    <button class="gamebtn" data-g="path"><b>Camino al final</b><span>Cinco etapas que suben el calor: besos, manos, menos ropa, boca y el final, con una pose y un ratito de ritmo lento o rápido para terminar en la cama.</span></button>
+    <button class="gamebtn" data-g="map"><b>Mapa del cuerpo</b><span>Una silueta de frente y de espalda. Uno toca una zona del cuerpo del otro y la app le da 3 ideas con tiempo, o puede hacer lo que quiera ahí. Se turnan y las zonas se abren con el nivel.</span></button>
   </div>
 
   <div id="bomb" hidden>
@@ -368,25 +393,47 @@ dialog a{color:var(--l1)}
     </div>
   </div>
 
-  <div id="path" hidden>
-    <div class="steps" id="pSteps"><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="stage">
-      <div class="card s0" id="pCard" aria-live="polite">
-        <div class="kindrow">
-          <p class="kind" id="pKind"></p>
-          <button class="qbtn" id="pInfo" aria-label="Cómo se hace esta pose" hidden>?</button>
-        </div>
-        <p class="text" id="pText"></p>
+  <div id="bodymap" hidden>
+    <div id="mSetup">
+      <h2 style="margin-top:22px">¿Qué silueta le toca a cada quien?</h2>
+      <p class="lead">Es solo un dibujo para ubicarse. Elijan la que más se parezca a cada cuerpo. Todo es opcional, y las zonas íntimas y lo que se hace ahí se cumplen solo dentro de lo que hayan acordado.</p>
+      <div id="mSilPick"></div>
+      <button class="primary" id="mStart">Empezar<small>Se turnan: uno da y el otro recibe</small></button>
+    </div>
+
+    <div id="mGame" hidden>
+      <div class="score" id="mScore"></div>
+      <div class="seg" id="mSeg" role="group" aria-label="Nivel">
+        <button data-l="0" aria-pressed="true">Suave</button>
+        <button data-l="1" aria-pressed="false">Picante</button>
+        <button data-l="2" aria-pressed="false">Intenso</button>
       </div>
-    </div>
-    <div class="acts" id="pActs">
-      <button class="ok" id="pDone">Hecho, sigue tu pareja</button>
-      <button id="pOther">Otra tarea de esta etapa</button>
-      <button class="ghost" id="pSkip">Subir a la siguiente etapa</button>
-    </div>
-    <div class="acts" id="pFinal" hidden>
-      <button class="ok" id="pAnother">Otra pose</button>
-      <button class="ghost" id="pEnd">Terminar el juego</button>
+      <div class="opts two" id="mView" role="group" aria-label="Vista del cuerpo">
+        <button data-v="f" aria-pressed="true">De frente</button>
+        <button data-v="b" aria-pressed="false">De espalda</button>
+      </div>
+      <div class="fig" id="mFig"></div>
+      <div class="stage">
+        <div class="card idle s0" id="mCard" aria-live="polite">
+          <div class="kindrow">
+            <p class="kind" id="mKind"></p>
+          </div>
+          <p class="text" id="mText"></p>
+          <div class="ideas" id="mIdeas" hidden></div>
+          <div class="timer" id="mTimer" hidden>
+            <button type="button" id="mRestart">Reiniciar</button>
+            <output id="mClock" aria-live="off"></output>
+          </div>
+        </div>
+      </div>
+      <div class="acts" id="mActs">
+        <button class="ok" id="mRandom">Zona sorpresa</button>
+        <button id="mOther">Otra idea</button>
+        <button class="ghost" id="mBackZone">Elegir otra zona</button>
+        <button class="ok" id="mDone">Hecho, cambian de rol</button>
+        <button class="ghost" id="mBackIdeas">Volver a las ideas</button>
+      </div>
+      <p class="safe">Si algo no te late, di la palabra segura y paramos.</p>
     </div>
   </div>
 </section>
@@ -1284,6 +1331,7 @@ function fmt(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "
 function stopTimer() {
   clearInterval(tId); tId = null; el.clock.textContent = "";
   const bc = document.getElementById("bClock"); if (bc) bc.textContent = "";
+  const mc = document.getElementById("mClock"); if (mc) mc.textContent = "";
 }
 function startTimer(sec, out) {
   out = out || el.clock;
@@ -1302,15 +1350,16 @@ function startTimer(sec, out) {
 }
 
 /* ===================== MINIJUEGOS ===================== */
-const MI = { root: $("minis"), menu: $("miniMenu"), bomb: $("bomb"), path: $("path"), title: $("miniTitle") };
-const MI_TITLES = { menu: "Elige un juego", bomb: "La bomba", path: "Camino al final" };
+const MI = { root: $("minis"), menu: $("miniMenu"), bomb: $("bomb"), map: $("bodymap"), title: $("miniTitle") };
+const MI_TITLES = { menu: "Elige un juego", bomb: "La bomba", map: "Mapa del cuerpo" };
 let miniView = "menu";
 
 function showMini(view) {
   miniView = view;
   MI.menu.hidden = view !== "menu";
   MI.bomb.hidden = view !== "bomb";
-  MI.path.hidden = view !== "path";
+  MI.map.hidden = view !== "map";
+  if (view === "menu") stopTimer();
   MI.title.textContent = MI_TITLES[view];
   window.scrollTo(0, 0);
 }
@@ -1501,79 +1550,643 @@ function renderBomb() {
   }
 }
 
-/* ---------- Camino al final ---------- */
-const PATH = [
-  { n: "Calentando", t: [
-    "Bésale el cuello a tu pareja durante 30 segundos mientras te agarra de la cintura.",
-    "Dale a tu pareja un beso largo y lento en la boca, con las manos en su cara.",
-    "Susúrrale al oído lo que te imaginas hacer más tarde.",
-    "Bailen pegados una canción completa, sin separar los cuerpos.",
-    "Siéntate en las piernas de tu pareja y bésala o bésalo mirándole a los ojos.",
-    "Muérdele suave el labio y el cuello a tu pareja, uno por uno.",
-    "Abraza a tu pareja por detrás y bésale la nuca y los hombros durante 1 minuto.",
-    "Dile a tu pareja lo que más te calienta de ella o él, con un beso después de cada cosa."
-  ] },
-  { n: "Manos", t: [
-    "Acaricia a tu pareja por encima de la ropa: espalda, cintura y muslos, durante 1 minuto, sin prisa.",
-    "Quítale a tu pareja la prenda de arriba, despacio, besando cada parte que descubras.",
-    "Tu pareja elige dónde te toca durante 1 minuto, por encima de la ropa. Tú te dejas.",
-    "Dale un masaje sensual en espalda y hombros y baja poco a poco hasta la cintura.",
-    "Bésale el pecho o el abdomen a tu pareja y mete las manos por debajo de su prenda.",
-    "Tu pareja te venda los ojos y te acaricia durante 1 minuto. Tú adivinas dónde.",
-    "Quítate una prenda mirando a tu pareja y déjala en sus manos.",
-    "Recorre los muslos de tu pareja de las rodillas hacia arriba, muy lento, con un beso al final de cada pasada."
-  ] },
-  { n: "Menos ropa", t: [
-    "Quítale la prenda de arriba a tu pareja usando solo los dientes o los labios.",
-    "Quédate en ropa interior y deja que tu pareja te recorra con la boca de arriba abajo durante 1 minuto.",
-    "Tu pareja elige una prenda tuya y te la quitas bailando.",
-    "Bésale el pecho y el abdomen a tu pareja sin ropa durante 1 minuto, mientras te acaricia el cabello.",
-    "Pasa un hielo por el cuerpo de tu pareja y sigue el camino con la boca tibia.",
-    "Desnúdense el uno al otro, prenda por prenda, sin apartar la mirada.",
-    "Recuéstate y deja que tu pareja te acaricie por encima de la ropa interior durante 1 minuto.",
-    "Con los ojos vendados, deja que tu pareja te bese los muslos, el vientre y la cintura. Adivina por dónde va."
-  ] },
-  { n: "Con la boca", t: [
-    "Besa y lame la zona íntima que tu pareja te indique durante 2 minutos. Ella o él marca el ritmo con palabras.",
-    "Tu pareja te toca con la mano donde más le gusta durante 2 minutos, y tú le dices «así» o «más despacio».",
-    "Dale a tu pareja 2 minutos de sexo oral. Después cambian.",
-    "Recorre a tu pareja de los pies a la cabeza con la lengua, sin dejar zona sin cubrir (dentro de lo acordado).",
-    "Muéstrale a tu pareja cómo te gusta que te toquen, con tu propia mano, mientras ella o él mira. Después toma el relevo.",
-    "Tu pareja te pide dónde quiere tu boca y cuánto tiempo. Lo cumples sin decir palabra.",
-    "Acaríciense y bésense los dos a la vez, cada uno donde más le gusta al otro, durante 2 minutos.",
-    "Sigue el ritmo que te marque tu pareja con la mano en tu cabeza o en tu cadera, hasta que diga «ya»."
-  ] },
-  { n: "El final", t: null }
+/* ---------- Mapa del cuerpo ---------- */
+/* Siluetas esquemáticas (frente y espalda). Cada zona tiene un nivel mínimo (lv) y ideas propias por nivel (sp).
+   En las ideas: {z} = la zona con artículo, {r} = "por encima de la ropa" (solo Suave y solo zonas con ropa), {t} = el tiempo.
+   own = 1 usa solo sus ideas; own = 0 las mezcla con las generales (MAP_GEN). Todo dentro de lo acordado. */
+const MAP_TIMES = [[20, 30, 45, 60], [30, 45, 60, 90], [45, 60, 90, 120]];
+const MAP_SIL = { f: "Mujer", m: "Hombre", n: "Neutra" };
+const MAP_V = { f: { sw: 44, ww: 32, hw: 48 }, m: { sw: 54, ww: 42, hw: 42 }, n: { sw: 48, ww: 37, hw: 44 } };
+
+const MAP_GEN = [
+  [
+    "Besos lentos en {z}{r} durante {t}.",
+    "Caricias con la punta de los dedos en {z}{r} durante {t}, sin prisa.",
+    "Un soplido tibio y un beso, alternando, en {z}{r} durante {t}.",
+    "Masaje lento con las dos manos en {z}{r} durante {t}.",
+    "Mordiscos suaves en {z}{r} durante {t}.",
+    "Dibuja con un dedo letras en {z}{r} durante {t}. Quien recibe adivina qué dice.",
+    "Roza {z}{r} con la punta de la nariz y los labios durante {t}, sin llegar a besar.",
+    "Besos cortos y una caricia larga, alternando, en {z}{r} durante {t}."
+  ],
+  [
+    "Besos y lengua en {z} durante {t}, con calma y sin prisa.",
+    "Recorre {z} con la punta de la lengua y sopla encima durante {t}.",
+    "Caricias lentas con las dos manos en {z} durante {t}, por debajo de la ropa si estorba.",
+    "Besos y mordiscos suaves en {z} durante {t}. Quien recibe cierra los ojos.",
+    "Pasa un hielo por {z} y sigue el camino con besos tibios durante {t}.",
+    "Masaje sensual con las dos manos en {z} durante {t}, cada vez más lento.",
+    "Besa {z} y sube la intensidad cada 15 segundos durante {t}.",
+    "Quien recibe le dice a quien da cómo lo quiere en {z}: más lento, más rápido o con lengua. Duración: {t}."
+  ],
+  [
+    "Lame {z} despacio, de un extremo al otro, durante {t}.",
+    "Lame, besa y chupa {z} sin prisa durante {t}.",
+    "Toca {z} con las manos, sin ropa de por medio, y besa después. Duración: {t}.",
+    "Muerde suave {z} y calma con la lengua, alternando, durante {t}.",
+    "Recorre {z} con la lengua y las manos a la vez durante {t}. Quien recibe no puede moverse.",
+    "Quien recibe tiene los ojos vendados: boca y manos en {z} durante {t}, sin saber qué viene.",
+    "Toma {z} con las manos y la boca a tu ritmo durante {t}, y sube la presión poco a poco.",
+    "Lengua lenta en {z} durante {t} y, en los últimos 10 segundos, lo más rápido que quien recibe aguante."
+  ]
 ];
 
-PATH[0].t.push(
-  "Mete las manos bajo la ropa de tu pareja y acaricia su espalda y su abdomen mientras la besas, 1 minuto.",
-  "Siéntate sobre tu pareja, de frente, y bésala o bésalo con calma mientras sus manos bajan por tu espalda.",
-  "Quítale la prenda de arriba a tu pareja despacio, besando cada parte que descubras."
-);
-PATH[1].t.push(
-  "Acaricia a tu pareja por debajo de la ropa interior, por encima de la piel, durante 30 segundos, y para.",
-  "Quítale la ropa interior a tu pareja muy despacio y déjala en sus manos.",
-  "Besa la parte interna de los muslos de tu pareja de arriba abajo, 3 veces, cada vez más lento."
-);
-PATH[2].t.push(
-  "Sexo oral de 30 segundos a tu pareja, muy suave, y ella o él decide cuándo cortar.",
-  "Quédense sin ropa y frótense, cuerpo con cuerpo, durante 2 minutos.",
-  "Tu pareja te toca con la mano donde más le gusta durante 1 minuto lento y 30 segundos rápido."
-);
-PATH[3].t.push(
-  "Sexo oral de 2 minutos: 1 minuto lento y 1 minuto con el ritmo que te pida tu pareja. Después cambian.",
-  "69 durante 90 segundos. Quien aguante más sin pedir cambio elige la pose del final.",
-  "Tu pareja te lleva al límite con la boca 1 minuto y para justo antes del final. Después cambian."
-);
-const FINAL_TASKS = [
-  "Prueben esto 1 minuto lento, con protección, y paren 30 segundos a respirar.",
-  "Ritmo de 20 segundos: lento, rápido, pausa. Repitan 3 veces, con protección.",
-  "Quien está arriba o atrás decide el ritmo durante 1 minuto. Después cambian de lugar.",
-  "30 segundos lento, 30 segundos rápido y se quedan quietos abrazados 30 segundos.",
-  "Mírense a los ojos durante 1 minuto y muévanse muy despacio, con protección.",
-  "Elijan: 90 segundos seguidos o 3 tandas de 30 segundos con pausa. Con protección."
+/* Opción «Libre»: haz lo que quieras en la zona, según el nivel */
+const MAP_LIBRE = [
+  "Libre en {z}: besos y caricias como quieras{r}, durante {t}.",
+  "Libre en {z}: lo que quieras con la boca y las manos, sin penetración, durante {t}. Quien recibe se deja hacer, dentro de lo acordado.",
+  "Libre en {z}: haz lo que quieras aquí, con la boca, las manos o lo que se te antoje, durante {t}. Quien recibe se deja hacer, dentro de lo acordado."
 ];
+
+const Z = (id, v, n, z, lv, c, own, sh, sp, x) => ({ id, v, n, z, lv, c, own, sh, sp, x });
+const MAP_ZONES = [
+  /* ---------- FRENTE (14) ---------- */
+  Z("boca", "f", "Boca", "la boca", 0, 0, 1,
+    () => [[120, 47, 12, 8]],
+    [[
+      "Un beso largo y lento en la boca durante {t}, sin usar las manos.",
+      "Besos cortos y juguetones en los labios durante {t}. Quien recibe no puede besar de regreso.",
+      "Roza sus labios con los tuyos, sin besar, durante {t}. Al terminar, un beso profundo.",
+      "Muérdele suave el labio de abajo y bésale con calma durante {t}.",
+      "Besos lentos con los ojos abiertos, mirándose, durante {t}."
+    ], [
+      "Besos profundos con lengua durante {t}, con una mano en su nuca.",
+      "Bésale despacio, mordiéndole el labio cada tantos besos, durante {t}.",
+      "Beso largo con las manos quietas durante {t}. Al terminar, las manos pueden bajar.",
+      "Besos con lengua durante {t}, con una mano bajando por el pecho y la cintura."
+    ], [
+      "Besos profundos y calientes durante {t}, con los cuerpos pegados, sin ropa.",
+      "Beso lento; cuando quien recibe pida más, las manos bajan. Duración: {t}.",
+      "Besos con lengua durante {t} mientras la mano de quien da recorre todo el cuerpo.",
+      "Bésale como la primera vez durante {t}, sin prisa, y termina con un mordisquito."
+    ]]),
+  Z("orejas", "f", "Orejas", "las orejas", 0, 0, 0,
+    () => [[97, 40, 8, 12], [143, 40, 8, 12]],
+    [[
+      "Susúrrale algo atrevido al oído durante {t}, con los labios rozando la oreja.",
+      "Besos y soplidos suaves en las orejas durante {t}, una y luego la otra."
+    ], [
+      "Lengua suave alrededor de la oreja y susurros de lo que quieres hacerle después, durante {t}."
+    ], [
+      "Lame y muerde suave la oreja mientras le susurras, sin filtro, lo que quieres hacerle. Duración: {t}."
+    ]]),
+  Z("cuello", "f", "Cuello", "el cuello", 0, 0, 0,
+    () => [[120, 74, 11, 11]],
+    [[
+      "Besos lentos bajando desde la oreja hasta la clavícula durante {t}.",
+      "Muérdele suave el cuello, sin dejar marca, durante {t}."
+    ], [
+      "Besos y lengua desde la oreja hasta el hombro durante {t}, con una mano en su cintura."
+    ], [
+      "Lame y muerde suave el cuello durante {t} mientras una mano baja por el cuerpo, sin ropa."
+    ]]),
+  Z("hombros", "f", "Hombros", "los hombros", 0, 1, 0,
+    (V) => [[120 - (V.sw - 10), 100, 15, 13], [120 + (V.sw - 10), 100, 15, 13]],
+    [[
+      "Besos por todo el hombro y un mordisquito al final durante {t}.",
+      "Masaje firme en los hombros durante {t} y besos en el cuello para cerrar."
+    ], [
+      "Baja el tirante o la manga y besa el hombro con lengua durante {t}."
+    ], [
+      "Besa y lame los hombros mientras las manos recorren todo el cuerpo, sin ropa, durante {t}."
+    ]]),
+  Z("brazos", "f", "Brazos y manos", "los brazos y las manos", 0, 1, 0,
+    (V) => [[120 - (V.sw + 10), 190, 12, 68], [120 + (V.sw + 10), 190, 12, 68]],
+    [[
+      "Besa cada dedo de la mano y sube por el brazo hasta el hombro durante {t}.",
+      "Caricias en la palma y la muñeca, con soplidos suaves, durante {t}."
+    ], [
+      "Chupa suave cada dedo y besa la muñeca, mirándole a los ojos, durante {t}."
+    ], [
+      "Lame la palma y los dedos, uno por uno, durante {t}, sin apartar la mirada."
+    ]]),
+  Z("pecho", "f", "Pecho", "el pecho", 1, 0, 1,
+    (V) => [[120, 124, V.sw - 10, 20]],
+    [[], [
+      "Besos y caricias en el pecho, por encima de la ropa interior, durante {t}.",
+      "Recorre el pecho con la punta de la lengua, sin llegar a los pezones, durante {t}.",
+      "Quita la prenda de arriba despacio y besa el pecho durante {t}.",
+      "Caricias con la yema de los dedos alrededor de los pezones durante {t}, muy despacio.",
+      "Pasa un hielo por el pecho y sigue con la boca tibia durante {t}.",
+      "Besos y lengua en el pecho durante {t}, con las manos en la cintura de quien recibe."
+    ], [
+      "Lame y chupa los pezones y todo el pecho, sin ropa, durante {t}.",
+      "Pezones y pecho con lengua y mordiscos suaves durante {t}. Quien recibe dice cuándo más fuerte o más lento.",
+      "Chupa despacio un lado del pecho mientras tu mano acaricia el otro durante {t}.",
+      "Quien recibe tiene los ojos vendados y siente boca y lengua en el pecho durante {t}.",
+      "Lame el pecho mientras quien recibe marca el ritmo con la mano en tu nuca, durante {t}.",
+      "Recorre el pecho con la lengua, baja por el abdomen y vuelve a subir durante {t}."
+    ]]),
+  Z("abdomen", "f", "Abdomen", "el abdomen", 0, 1, 0,
+    (V) => [[120, 166, V.ww - 9, 18]],
+    [[
+      "Mete las manos bajo la playera y acaricia el abdomen durante {t}.",
+      "Besos bajando por el abdomen, por encima de la ropa, hasta el borde del pantalón. Duración: {t}."
+    ], [
+      "Besos y lengua bajando por el abdomen hasta el borde de la ropa interior durante {t}."
+    ], [
+      "Lame el ombligo, sopla encima y sigue bajando despacio durante {t}."
+    ]]),
+  Z("cintura", "f", "Cintura y costados", "la cintura y los costados", 0, 1, 0,
+    (V) => [[120 - (V.ww - 3), 190, 9, 16], [120 + (V.ww - 3), 190, 9, 16]],
+    [[
+      "Toma la cintura con las dos manos y besa el costado durante {t}."
+    ], [
+      "Recorre los costados con las manos, por debajo de la ropa, y besa la cintura durante {t}."
+    ], [
+      "Lame los costados y aprieta la cintura con las manos, sin ropa, durante {t}."
+    ]]),
+  Z("vientre", "f", "Vientre bajo", "el vientre bajo", 1, 0, 1,
+    (V) => [[120, 222, V.ww - 8, 15]],
+    [[], [
+      "Besos en el vientre bajo, justo arriba del borde de la ropa interior, durante {t}.",
+      "Recorre el vientre bajo con la lengua, de cadera a cadera, durante {t}.",
+      "Mete un dedo bajo el borde de la ropa interior y recorre el vientre bajo despacio durante {t}.",
+      "Besos y soplidos tibios en el vientre bajo durante {t}. Quien recibe no puede moverse.",
+      "Pasa un hielo por el vientre bajo y sigue con besos durante {t}."
+    ], [
+      "Lame el vientre bajo y baja despacio hasta el borde de la zona íntima durante {t}, sin llegar.",
+      "Besos y lengua desde el ombligo hasta la zona íntima, y vuelve a subir, durante {t}.",
+      "Recorre el vientre bajo con las manos y la boca a la vez durante {t}, y para justo antes de bajar más.",
+      "Acaricia y besa el vientre bajo mientras quien recibe pide con palabras lo que quiere después. Duración: {t}.",
+      "Quien recibe tiene los ojos vendados y siente boca y manos en el vientre bajo durante {t}."
+    ]]),
+  Z("caderas", "f", "Caderas", "las caderas", 1, 0, 1,
+    (V) => [[120 - (V.hw - 6), 248, 12, 17], [120 + (V.hw - 6), 248, 12, 17]],
+    [[], [
+      "Besos en las caderas, sobre el borde de la ropa interior, durante {t}.",
+      "Recorre con la lengua el hueso de la cadera, de un lado al otro, durante {t}.",
+      "Sujeta las caderas con las dos manos y besa de un lado al otro durante {t}.",
+      "Baja un poco la ropa por un lado y besa la cadera durante {t}."
+    ], [
+      "Lame las caderas y baja por la ingle, sin ropa, durante {t}.",
+      "Agarra las caderas, acerca el cuerpo hacia ti y besa ahí durante {t}.",
+      "Besos, lengua y mordiscos suaves en las caderas durante {t}.",
+      "Recorre las caderas con las manos y con la boca mientras quien recibe se deja hacer, durante {t}."
+    ]]),
+  Z("intima", "f", "Zona íntima", "la zona íntima", 1, 0, 1,
+    () => [[120, 262, 13, 13]],
+    [[], [
+      "Acaricia la zona íntima por encima de la ropa interior durante {t}, muy despacio.",
+      "Besos y soplidos tibios por encima de la ropa interior durante {t}.",
+      "Lame por encima de la ropa interior durante {t} y para justo cuando quien recibe pida más.",
+      "Mete la mano bajo la ropa interior y acaricia con la punta de los dedos durante {t}, sin prisa.",
+      "Frota con la palma, por encima de la ropa interior, durante {t}, con el ritmo que pida quien recibe.",
+      "Haz a un lado la ropa interior y besa con calma durante {t}.",
+      "Roza con la boca, por encima de la ropa interior, durante {t}. Quien recibe decide cuándo se corta."
+    ], [
+      "Sexo oral durante {t}, lento, y quien recibe marca el ritmo con la mano.",
+      "Lame y chupa despacio durante {t}, sin apuro, y cambia el ritmo cada 20 segundos.",
+      "Toca con las manos durante {t}: primero suave, luego más firme, siguiendo lo que pida quien recibe.",
+      "Boca y manos a la vez durante {t}. Quien recibe puede pedir «más», «menos» o «para».",
+      "Con los ojos vendados, quien recibe siente boca y manos durante {t} sin saber qué viene.",
+      "Llévale al límite con la boca durante {t} y para justo antes del final.",
+      "Lame y toca durante {t}; en los últimos 20 segundos, lo más rápido que quien recibe pida.",
+      "Tócate y toca a tu pareja al mismo tiempo durante {t}, mirándole a los ojos.",
+      "Penetración lenta, con protección, durante {t}, mirándose a los ojos. Quien recibe marca el ritmo.",
+      "Rocen sus zonas íntimas, sin penetración, durante {t}, moviéndose despacio, piel con piel."
+    ]]),
+  Z("intimos", "f", "Muslos internos", "la parte interna de los muslos", 1, 0, 1,
+    () => [[110, 304, 8, 30], [130, 304, 8, 30]],
+    [[], [
+      "Besos por la parte interna de los muslos, de la rodilla hacia arriba, durante {t}, sin llegar.",
+      "Caricias lentas por dentro de los muslos, por encima de la ropa interior, durante {t}.",
+      "Lame despacio la parte interna del muslo y para justo antes de la ropa interior, durante {t}.",
+      "Pasa un hielo por la parte interna de los muslos y sigue con la boca durante {t}.",
+      "Muérdele suave por dentro del muslo durante {t}, subiendo poco a poco."
+    ], [
+      "Besos y lengua por dentro de los muslos, de las rodillas a la ingle, durante {t}; después, lo que quiera quien recibe.",
+      "Acaricia y lame por dentro de los muslos durante {t}, y sube hasta la zona íntima solo cuando quien recibe lo pida.",
+      "Abre despacio las piernas con las manos y besa por dentro de los muslos durante {t}.",
+      "Alterna lengua en un muslo y mano en el otro durante {t}.",
+      "Llévale hasta el borde: lame por dentro de los muslos durante {t} sin tocar la zona íntima."
+    ]]),
+  Z("muslos", "f", "Muslos", "los muslos", 0, 1, 0,
+    () => [[90, 298, 12, 34], [150, 298, 12, 34]],
+    [[
+      "Sube las manos por los muslos, por encima de la ropa, de la rodilla a la cadera, durante {t}.",
+      "Besos por encima de la ropa, de la rodilla hacia arriba, durante {t}."
+    ], [
+      "Besos y lengua desde la rodilla hasta la cadera, por fuera de los muslos, durante {t}."
+    ], [
+      "Lame los muslos de la rodilla hacia arriba y regresa despacio durante {t}."
+    ]]),
+  Z("piernas", "f", "Piernas y pies", "las piernas y los pies", 0, 1, 0,
+    () => [[98, 384, 14, 42], [142, 384, 14, 42]],
+    [[
+      "Quita los calcetines o los zapatos y da un masaje de pies durante {t}, con besos en los tobillos."
+    ], [
+      "Besos y lengua en el empeine y los tobillos, subiendo por las pantorrillas, durante {t}."
+    ], [
+      "Besa y lame los pies y sube por las piernas hasta los muslos durante {t}."
+    ]]),
+
+  /* ---------- ESPALDA (8) ---------- */
+  Z("nuca", "b", "Nuca", "la nuca", 0, 0, 0,
+    () => [[120, 74, 11, 11]],
+    [[
+      "Abraza por detrás y besa la nuca y los hombros durante {t}.",
+      "Besos lentos y soplidos tibios en la nuca, desde atrás, durante {t}."
+    ], [
+      "Besos y lengua en la nuca, con una mano en su cintura, durante {t}."
+    ], [
+      "Pega tu cuerpo desnudo por detrás y lame la nuca durante {t}, con una mano bajando por el cuerpo."
+    ]]),
+  Z("ealta", "b", "Espalda alta", "la espalda alta", 0, 1, 0,
+    (V) => [[120, 118, V.sw - 8, 20]],
+    [[
+      "Masaje con besos entre los omóplatos durante {t}."
+    ], [
+      "Baja la prenda de arriba y recorre la espalda con besos y lengua durante {t}."
+    ], [
+      "Recorre la espalda con la lengua, del cuello a la cintura, durante {t}."
+    ]]),
+  Z("emedia", "b", "Espalda media", "la espalda media", 0, 1, 0,
+    (V) => [[120, 158, V.ww - 2, 18]],
+    [[
+      "Recorre la columna con la punta de un dedo, de arriba abajo, durante {t}."
+    ], [
+      "Besos a lo largo de la columna, subiendo y bajando, durante {t}."
+    ], [
+      "Lame la columna de arriba abajo, con las manos en la cintura, durante {t}."
+    ]]),
+  Z("ebaja", "b", "Espalda baja", "la espalda baja", 0, 1, 0,
+    (V) => [[120, 196, V.ww - 3, 15]],
+    [[
+      "Besos en la espalda baja, justo donde termina la ropa, durante {t}.",
+      "Manos en la espalda baja y besos en la nuca a la vez durante {t}."
+    ], [
+      "Baja un poco la ropa y besa la espalda baja con lengua durante {t}."
+    ], [
+      "Lame la espalda baja y baja hasta donde empiezan los glúteos durante {t}."
+    ]]),
+  Z("gluteos", "b", "Glúteos", "los glúteos", 1, 0, 1,
+    (V) => [[120 - V.hw / 2, 242, V.hw / 2, 24], [120 + V.hw / 2, 242, V.hw / 2, 24]],
+    [[], [
+      "Caricias y masaje en los glúteos, por encima de la ropa interior, durante {t}.",
+      "Besos en los glúteos, sobre la ropa interior, durante {t}.",
+      "Baja la ropa interior y besa los glúteos despacio durante {t}.",
+      "Aprieta y masajea los glúteos con las dos manos mientras besas la espalda baja, durante {t}.",
+      "Recorre los glúteos con la lengua, por encima de la ropa interior, durante {t}."
+    ], [
+      "Lame y besa los glúteos sin ropa durante {t}, con las manos abriendo y apretando despacio.",
+      "Masajea los glúteos con las dos manos y besa después, durante {t}, mientras quien recibe se deja hacer.",
+      "Recorre los glúteos con la lengua y baja por la parte de atrás de los muslos durante {t}.",
+      "Mordiscos suaves y besos en los glúteos durante {t}.",
+      "Pega tu cuerpo desnudo a los glúteos de tu pareja y muévete lento durante {t}, sin penetración.",
+      "Desde atrás, acaricia y besa durante {t}, y baja hasta la zona íntima solo si tu pareja lo pide."
+    ]]),
+  Z("muslost", "b", "Muslos por atrás", "la parte de atrás de los muslos", 1, 0, 0,
+    () => [[98, 300, 17, 34], [142, 300, 17, 34]],
+    [[], [
+      "Besos y lengua por detrás de los muslos, de la rodilla hacia los glúteos, durante {t}."
+    ], [
+      "Lame la parte de atrás de los muslos, de la rodilla hacia los glúteos, y regresa despacio durante {t}."
+    ]]),
+  Z("rodillas", "b", "Detrás de las rodillas", "la parte de atrás de las rodillas", 0, 1, 0,
+    () => [[98, 348, 13, 9], [142, 348, 13, 9]],
+    [[
+      "Besos suaves detrás de las rodillas durante {t}; es más sensible de lo que parece."
+    ], [], []]),
+  Z("pantorrillas", "b", "Pantorrillas y talones", "las pantorrillas y los talones", 0, 1, 0,
+    () => [[98, 392, 14, 34], [142, 392, 14, 34]],
+    [[
+      "Masaje lento en pantorrillas y talones durante {t}."
+    ], [
+      "Besos y lengua desde el talón hasta la rodilla, por atrás, durante {t}."
+    ], []])
+];
+
+/* Ampliación: ideas de «los dos a la vez», más lamer/morder, y ideas que dependen de la silueta.
+   x[nivel] = { f: ideas si recibe una mujer, m: si recibe un hombre, fm: recibe mujer y da hombre, mf: recibe hombre y da mujer } */
+(function () {
+  const zone = (id) => MAP_ZONES.find((z) => z.id === id);
+  const addSp = (id, lv, list) => { zone(id).sp[lv].push(...list); };
+  const addX = (id, lv, key, list) => {
+    const z = zone(id);
+    z.x = z.x || [{}, {}, {}];
+    (z.x[lv][key] = z.x[lv][key] || []).push(...list);
+  };
+
+  /* --- ideas para cualquier pareja --- */
+  addSp("intima", 2, [
+    "69 durante {t}: los dos se dan sexo oral al mismo tiempo, cada quien a su ritmo.",
+    "Sexo oral durante {t} mientras quien recibe te acaricia el cabello y te dice qué quiere.",
+    "Sexo oral durante {t} mientras quien recibe se acaricia el pecho y te mira.",
+    "Penetración con protección durante {t} mientras se besan en la boca sin parar.",
+    "Lame y toca a la vez durante {t}: boca en una parte y manos en otra, y cambian cuando quien recibe lo pida."
+  ]);
+  addSp("pecho", 2, [
+    "Chupa y lame el pecho mientras tu otra mano baja a la zona íntima durante {t}.",
+    "Lame el pecho durante {t} mientras quien recibe se toca la zona íntima y tú lo ves todo."
+  ]);
+  addSp("intimos", 2, [
+    "Lame por dentro de los muslos mientras tu mano acaricia la zona íntima durante {t}."
+  ]);
+  addSp("caderas", 2, [
+    "Besa y lame las caderas mientras una mano acaricia la zona íntima durante {t}."
+  ]);
+  addSp("boca", 2, [
+    "Besos profundos durante {t} mientras los dos se recorren el cuerpo con las manos, sin ropa."
+  ]);
+  addSp("gluteos", 1, [
+    "Muerde suave los glúteos, por encima de la ropa interior, durante {t}.",
+    "Besos y lengua en los glúteos, con la ropa interior a un lado, durante {t}."
+  ]);
+  addSp("gluteos", 2, [
+    "Lame y chupa suave los glúteos, sin dejar marca, durante {t}.",
+    "Lame los glúteos y baja por la ingle durante {t}, con las manos apretando y separando despacio.",
+    "Muerde suave los glúteos y calma con la lengua, alternando, durante {t}.",
+    "Besa los glúteos mientras una mano acaricia por delante la zona íntima, durante {t}."
+  ]);
+
+  /* --- pecho: senos si recibe una mujer, pecho si recibe un hombre --- */
+  addX("pecho", 1, "f", [
+    "Besos y lengua en los senos, por encima del brasier, durante {t}.",
+    "Baja el brasier y besa los senos despacio durante {t}.",
+    "Lame los senos alrededor de los pezones, sin tocarlos todavía, durante {t}.",
+    "Sostén los senos con las dos manos y bésalos durante {t}, uno y luego el otro."
+  ]);
+  addX("pecho", 1, "m", [
+    "Quítale la playera y lame el pecho, con los pezones incluidos, durante {t}.",
+    "Besos y lengua en el pecho, con las manos en su cintura, durante {t}."
+  ]);
+  addX("pecho", 2, "f", [
+    "Lame, chupa y muerde suave los senos durante {t}, alternando uno y otro.",
+    "Lame los pezones en círculos lentos durante {t} y sopla encima para que se sientan más.",
+    "Muerde suave alrededor de los senos y calma con la lengua durante {t}.",
+    "Sostén los senos con las dos manos y chupa los pezones a su ritmo durante {t}.",
+    "Besa y chupa un seno mientras tu mano acaricia la zona íntima, durante {t}."
+  ]);
+  addX("pecho", 2, "m", [
+    "Lame y muerde suave el pecho y los pezones durante {t}, bajando por el abdomen.",
+    "Chupa los pezones y recorre el pecho con la lengua durante {t}, con una mano bajando por su cuerpo."
+  ]);
+
+  /* --- zona íntima --- */
+  addX("intima", 1, "f", [
+    "Haz a un lado la ropa interior y lame despacio durante {t}; ella decide cuándo se corta.",
+    "Besa y lame por encima de la ropa interior hasta que ella pida más, durante {t}."
+  ]);
+  addX("intima", 1, "m", [
+    "Baja la ropa interior y lame la punta durante {t}, sin prisa; él decide cuándo se corta.",
+    "Besa y lame por encima de la ropa interior hasta que él pida más, durante {t}."
+  ]);
+  addX("intima", 2, "f", [
+    "Sexo oral a ella durante {t}: lame y chupa despacio, y sube el ritmo cuando ella lo pida.",
+    "Besa toda la zona íntima con la boca abierta y sigue con la punta de la lengua durante {t}, sin prisa.",
+    "Lame en círculos lentos durante {t} y cambia de dirección cada 15 segundos.",
+    "Sexo oral durante {t} con las manos separando sus piernas; ella marca el ritmo con la mano en tu cabeza.",
+    "Lame y chupa durante {t} mientras una mano sube a acariciar sus senos.",
+    "Sexo oral durante {t}, con pausas de 10 segundos para volver a empezar más lento.",
+    "Llévala al límite con la boca durante {t} y para justo antes del final."
+  ]);
+  addX("intima", 2, "m", [
+    "Sexo oral a él durante {t}: lame de la base a la punta y chupa despacio.",
+    "Lame y chupa la punta durante {t} y baja despacio, cada vez más adentro, a su ritmo.",
+    "Sexo oral durante {t}, con una mano acompañando y la otra en sus muslos; él marca el ritmo.",
+    "Lame y besa toda la zona, de abajo hacia arriba, durante {t}, sin prisa y con pausas.",
+    "Lame y chupa durante {t} mientras una mano acaricia sus muslos y su abdomen.",
+    "Sexo oral durante {t}, alternando lento y rápido cada 15 segundos.",
+    "Llévalo al límite con la boca durante {t} y para justo antes del final."
+  ]);
+  /* recibe ella y da él: penetración */
+  addX("intima", 2, "fm", [
+    "Penétrala despacio, con protección, durante {t}, mirándola a los ojos; ella marca el ritmo con un gesto.",
+    "Penétrala con protección durante {t}: 20 segundos lento, 20 rápido y 10 de pausa, repitiendo.",
+    "Penétrala con protección durante {t} mientras ella se toca la zona íntima al mismo tiempo.",
+    "Penétrala con protección durante {t} mientras le acaricias o le besas los senos.",
+    "Penétrala con protección durante {t} mientras ella dice en voz alta qué quiere: más lento, más rápido o más profundo.",
+    "Penétrala despacio, con protección, durante {t} y para 10 segundos justo antes de ir más rápido.",
+    "Penétrala con protección durante {t} mientras con la mano libre le acaricias la zona íntima.",
+    "Penétrala con protección durante {t} en la postura que ella elija, y ella marca cuándo cambiar de ritmo."
+  ]);
+  /* recibe él y da ella: ella se lo coloca */
+  addX("intima", 2, "mf", [
+    "Colócatelo dentro de ti, con protección, y muévete despacio durante {t}, mirándolo a los ojos.",
+    "Colócatelo dentro de ti, con protección, y sube y baja lento durante {t}; él solo deja que pase.",
+    "Colócatelo dentro de ti, con protección, durante {t}: 20 segundos lento, 20 rápido y 10 de pausa, repitiendo.",
+    "Colócatelo dentro de ti, con protección, durante {t} y tócate tú misma la zona íntima mientras te mueves.",
+    "Colócatelo dentro de ti, con protección, durante {t}, mientras él te acaricia los senos.",
+    "Colócatelo dentro de ti, con protección, y llévalo tú al ritmo que quieras durante {t}; él pide «más» o «menos».",
+    "Montada sobre él, con protección, muévete durante {t} y para 10 segundos justo antes de ir más rápido.",
+    "Colócatelo dentro de ti, con protección, y mueve las caderas en círculos durante {t}."
+  ]);
+
+  /* --- glúteos --- */
+  addX("gluteos", 2, "fm", [
+    "Desde atrás, con protección y sin prisa, durante {t}, con las manos apretando sus glúteos."
+  ]);
+  addX("gluteos", 2, "mf", [
+    "Desde atrás, deja que él te sostenga por los glúteos mientras te mueves hacia él, con protección, durante {t}."
+  ]);
+})();
+
+const M = { phase: "setup", sil: ["f", "m"], view: "f", level: 0, turn: 0, count: 0, done: [new Set(), new Set()], zone: null, ideas: [], pick: null, u: {} };
+(function () {
+  const sv = store("pd_sil");
+  if (sv && /^[fmn]{2}$/.test(sv)) M.sil = sv.split("");
+})();
+
+function mapTime(sec) {
+  if (sec % 60 === 0) { const m = sec / 60; return m + (m === 1 ? " minuto" : " minutos"); }
+  return sec + " segundos";
+}
+function mapFill(tpl, zone, level, sec) {
+  return tpl.split("{t}").join(mapTime(sec))
+    .split("{z}").join(zone.z)
+    .split("{r}").join(level === 0 && zone.c ? " por encima de la ropa" : "");
+}
+/* 3 ideas distintas para la zona y el nivel; no repite hasta agotar las de esa zona */
+function mapIdeas(zone, level, recv, giver) {
+  const xs = (zone.x && zone.x[level]) || {};
+  const extra = (xs[recv] || []).concat(xs[recv + giver] || []);
+  const pool = (zone.sp[level] || []).concat(extra, zone.own ? [] : MAP_GEN[level]);
+  const key = zone.id + "|" + level + "|" + recv + giver;
+  const used = M.u[key] = M.u[key] || [];
+  const all = pool.map((_, i) => i);
+  let avail = all.filter((i) => !used.includes(i));
+  if (avail.length < 3) { used.length = 0; avail = all.slice(); }
+  for (let i = avail.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = avail[i]; avail[i] = avail[j]; avail[j] = t;
+  }
+  return avail.slice(0, 3).map((i) => {
+    used.push(i);
+    const secs = MAP_TIMES[level];
+    const sec = secs[Math.floor(Math.random() * secs.length)];
+    return { text: mapFill(pool[i], zone, level, sec), sec };
+  });
+}
+function mapLibre(zone, level) {
+  const sec = [60, 90, 120][level];
+  return { text: mapFill(MAP_LIBRE[level], zone, level, sec), sec };
+}
+
+function mapBodySVG(sil, view, level, done, selId) {
+  const V = MAP_V[sil] || MAP_V.n, c = 120;
+  let s = '<svg viewBox="0 0 240 440" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Silueta ' + (view === "f" ? "de frente" : "de espalda") + '">';
+  s += '<g class="bodyfill">';
+  if (sil === "f") s += '<path class="hair" d="M96,32 Q96,6 120,6 Q144,6 144,32 L150,78 Q120,88 90,78 Z"/>';
+  s += '<ellipse cx="120" cy="36" rx="21" ry="26"/><rect x="109" y="58" width="22" height="28" rx="8"/>';
+  [-1, 1].forEach((d) => {
+    s += '<polyline class="limb" stroke-width="20" points="' + (c + d * (V.sw + 2)) + ",104 " + (c + d * (V.sw + 10)) + ",190 " + (c + d * (V.sw + 14)) + ',258"/>';
+    s += '<polyline class="limb" stroke-width="40" points="' + (c + d * 22) + ",262 " + (c + d * 22) + ',344"/>';
+    s += '<polyline class="limb" stroke-width="30" points="' + (c + d * 22) + ",344 " + (c + d * 22) + ',416"/>';
+    s += '<ellipse cx="' + (c + d * 24) + '" cy="424" rx="17" ry="8"/>';
+  });
+  s += '<path d="M' + (c - V.sw) + ",94 Q" + c + ",80 " + (c + V.sw) + ",94 Q" + (c + V.sw + 4) + ",150 " + (c + V.ww) + ",200 Q" +
+    (c + V.hw + 4) + ",228 " + (c + V.hw) + ",266 L" + (c - V.hw) + ",266 Q" + (c - V.hw - 4) + ",228 " + (c - V.ww) + ",200 Q" +
+    (c - V.sw - 4) + ",150 " + (c - V.sw) + ',94 Z"/>';
+  s += "</g>";
+  MAP_ZONES.forEach((z) => {
+    if (z.v !== view) return;
+    const locked = z.lv > level, isDone = done.has(z.id + "|" + level), sel = z.id === selId;
+    const label = z.n + (locked ? ", se abre en nivel " + LV[z.lv] : isDone ? ", ya hecha" : "");
+    s += '<g class="zone l' + z.lv + (locked ? " locked" : "") + (isDone ? " done" : "") + (sel ? " sel" : "") +
+      '" data-z="' + z.id + '" role="button" tabindex="' + (locked ? "-1" : "0") + '" aria-label="' + label + '"' + (locked ? ' aria-disabled="true"' : "") + ">";
+    const shapes = z.sh(V);
+    shapes.forEach((p) => { s += '<ellipse cx="' + p[0] + '" cy="' + p[1] + '" rx="' + p[2] + '" ry="' + p[3] + '"/>'; });
+    if (isDone) shapes.forEach((p) => { s += '<text class="tick" x="' + p[0] + '" y="' + p[1] + '">✓</text>'; });
+    s += "</g>";
+  });
+  return s + "</svg>";
+}
+
+function mapSilUI() {
+  const box = $("mSilPick");
+  box.textContent = "";
+  [0, 1].forEach((p) => {
+    const row = document.createElement("div");
+    row.className = "block";
+    const lbl = document.createElement("span");
+    lbl.className = "lbl"; lbl.textContent = nameOf(p);
+    const opts = document.createElement("div");
+    opts.className = "opts"; opts.setAttribute("role", "group"); opts.setAttribute("aria-label", "Silueta de " + nameOf(p));
+    ["f", "m", "n"].forEach((k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.dataset.p = p; b.dataset.s = k; b.textContent = MAP_SIL[k];
+      b.setAttribute("aria-pressed", String(M.sil[p] === k));
+      opts.appendChild(b);
+    });
+    row.appendChild(lbl); row.appendChild(opts);
+    box.appendChild(row);
+  });
+}
+
+function mapRender() {
+  stopTimer();
+  const setup = M.phase === "setup";
+  $("mSetup").hidden = !setup;
+  $("mGame").hidden = setup;
+  if (setup) { mapSilUI(); return; }
+
+  const g = M.turn, r = 1 - M.turn;
+  const sc = $("mScore");
+  sc.textContent = "";
+  ["Da: " + nameOf(g), "Recibe: " + nameOf(r)].forEach((t) => {
+    const sp = document.createElement("span"); sp.textContent = t; sc.appendChild(sp);
+  });
+  $("mSeg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.l === M.level)));
+  $("mView").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === M.view)));
+  $("mFig").innerHTML = mapBodySVG(M.sil[r], M.view, M.level, M.done[r], M.zone ? M.zone.id : "");
+
+  const card = $("mCard"), kind = $("mKind"), text = $("mText"), ideas = $("mIdeas");
+  card.classList.remove("s0", "s1", "s2");
+  card.classList.add("s" + M.level);
+  card.classList.toggle("idle", M.phase === "pick");
+  ideas.textContent = "";
+  ideas.hidden = M.phase !== "ideas";
+  $("mTimer").hidden = M.phase !== "doing";
+
+  if (M.phase === "pick") {
+    kind.textContent = "Nivel " + LV[M.level];
+    text.textContent = "Toca una zona del cuerpo de " + nameOf(r) + ", " + nameOf(g) + ". Las zonas apagadas se abren al subir de nivel.";
+  } else if (M.phase === "ideas") {
+    kind.textContent = M.zone.n + " de " + nameOf(r);
+    text.textContent = "Elige una idea, " + nameOf(g) + ":";
+    M.ideas.forEach((it, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "idea"; b.dataset.i = i; b.textContent = it.text;
+      ideas.appendChild(b);
+    });
+    const lb = document.createElement("button");
+    lb.type = "button"; lb.className = "idea libre"; lb.dataset.i = "libre";
+    lb.textContent = "Libre: lo que quieras en " + M.zone.z;
+    ideas.appendChild(lb);
+  } else {
+    kind.textContent = M.zone.n + " de " + nameOf(r);
+    text.textContent = M.pick.text;
+  }
+  text.classList.toggle("long", text.textContent.length > 110);
+  text.classList.toggle("xlong", text.textContent.length > 200);
+
+  $("mRandom").hidden = M.phase !== "pick";
+  $("mOther").hidden = M.phase !== "ideas";
+  $("mBackZone").hidden = M.phase !== "ideas";
+  $("mDone").hidden = M.phase !== "doing";
+  $("mBackIdeas").hidden = M.phase !== "doing";
+}
+
+function mapScroll() {
+  const rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  $("mCard").scrollIntoView({ behavior: rm ? "auto" : "smooth", block: "start" });
+}
+function mapStart() {
+  M.phase = "setup";
+  showMini("map");
+  mapRender();
+}
+function mapBegin() {
+  M.phase = "pick"; M.level = S.level; M.turn = S.turn; M.count = 0;
+  M.done = [new Set(), new Set()]; M.view = "f"; M.zone = null; M.pick = null; M.ideas = []; M.u = {};
+  mapRender();
+  window.scrollTo(0, 0);
+}
+function mapToPick() { M.zone = null; M.pick = null; M.phase = "pick"; mapRender(); }
+function mapZone(id) {
+  if (M.phase === "doing") { toast("Terminen esta idea o vuelvan a las ideas."); return; }
+  const z = MAP_ZONES.find((x) => x.id === id);
+  if (!z) return;
+  if (z.lv > M.level) { toast("Esa zona se abre en nivel " + LV[z.lv]); return; }
+  M.zone = z; M.ideas = mapIdeas(z, M.level, M.sil[1 - M.turn], M.sil[M.turn]); M.phase = "ideas";
+  mapRender();
+  mapScroll();
+}
+function mapRandom() {
+  const r = 1 - M.turn, sfx = "|" + M.level;
+  let pool = MAP_ZONES.filter((z) => z.lv <= M.level && !M.done[r].has(z.id + sfx));
+  if (!pool.length) {
+    MAP_ZONES.forEach((z) => M.done[r].delete(z.id + sfx));
+    pool = MAP_ZONES.filter((z) => z.lv <= M.level);
+    toast("Ya recorrieron todo en este nivel. Se limpian las marcas.");
+  }
+  const z = pool[Math.floor(Math.random() * pool.length)];
+  M.view = z.v;
+  mapZone(z.id);
+}
+function mapChoose(i) {
+  const it = i === "libre" ? mapLibre(M.zone, M.level) : M.ideas[+i];
+  if (!it) return;
+  M.pick = it; M.phase = "doing";
+  mapRender();
+  startTimer(it.sec, $("mClock"));
+  mapScroll();
+}
+function mapDone() {
+  if (!M.zone) return;
+  M.done[1 - M.turn].add(M.zone.id + "|" + M.level);
+  M.turn = 1 - M.turn;
+  M.count += 1;
+  M.zone = null; M.pick = null; M.phase = "pick"; M.view = "f";
+  if (S.auto && M.count % 4 === 0 && M.level < 2) {
+    M.level += 1;
+    toast("Subimos a nivel " + LV[M.level]);
+  }
+  mapRender();
+  window.scrollTo(0, 0);
+}
+
 /* ===================== V3: NIVELES GRADUALES (poses solo en Intenso) ===================== */
 (function () {
   // Lo que ya era muy fuerte para Suave/Picante pasa a Intenso
@@ -1699,12 +2312,6 @@ const FINAL_TASKS = [
 
   // ---------- NIVEL 3 · INTENSO: todo, y aquí sí salen las poses ----------
   BANK.pose = [[], [], BANK.pose[1].concat(BANK.pose[2])];
-
-  // Camino al final: la etapa "Manos" no llega todavía a ropa interior
-  const heavy = /por debajo de la ropa interior|Quítale la ropa interior/;
-  const moved = PATH[1].t.filter((t) => heavy.test(t));
-  PATH[1].t = PATH[1].t.filter((t) => !heavy.test(t));
-  PATH[2].t.push(...moved);
 })();
 
 /* ===================== V4: ratitos de sexo oral en Picante ===================== */
@@ -1725,53 +2332,11 @@ BANK.castigo[1].push(
   "Sexo oral de 1 minuto a tu pareja, con el ritmo que te marque. Después cambian.",
   "Tu pareja te hace sexo oral 30 segundos y para justo antes de que pidas más."
 );
-const PL = { stage: 0, turn: 0, done: 0, used: {}, pose: null, text: "" };
-
-function uniq(list, key) {
-  const u = PL.used[key] = PL.used[key] || [];
-  if (u.length >= list.length) u.length = 0;
-  let i;
-  do { i = Math.floor(Math.random() * list.length); } while (u.includes(i));
-  u.push(i);
-  return list[i];
-}
-function pathStart() {
-  PL.stage = 0; PL.turn = S.turn; PL.done = 0; PL.used = {}; PL.pose = null;
-  pathDraw();
-  showMini("path");
-}
-function pathDraw() {
-  if (PL.stage < 4) { PL.pose = null; PL.text = uniq(PATH[PL.stage].t, "s" + PL.stage); }
-  else { PL.pose = uniq(BANK.pose[2], "final"); PL.text = PL.pose.n + ": " + PL.pose.t + " " + uniq(FINAL_TASKS, "ft"); }
-  pathRender();
-}
-function pathRender() {
-  const fin = PL.stage === 4;
-  $("pSteps").querySelectorAll("i").forEach((x, i) => x.classList.toggle("on", i <= PL.stage));
-  const card = $("pCard");
-  card.classList.remove("s0", "s1", "s2");
-  card.classList.add(PL.stage <= 1 ? "s0" : PL.stage === 2 ? "s1" : "s2");
-  $("pKind").textContent = fin
-    ? "Etapa 5 de 5: El final. Cuiden el ritmo y tengan protección a la mano."
-    : "Etapa " + (PL.stage + 1) + " de 5: " + PATH[PL.stage].n + ". Le toca a " + nameOf(PL.turn) + ".";
-  const text = $("pText");
-  text.textContent = PL.text;
-  text.classList.toggle("long", PL.text.length > 110);
-  text.classList.toggle("xlong", PL.text.length > 200);
-  $("pInfo").hidden = !fin;
-  $("pActs").hidden = fin;
-  $("pFinal").hidden = !fin;
-}
-function pathAdvance() {
-  PL.stage += 1; PL.done = 0;
-  toast(PL.stage === 4 ? "Llegaron al final" : "Etapa " + (PL.stage + 1) + ": " + PATH[PL.stage].n);
-}
-
 /* ---------- eventos de minijuegos ---------- */
 $("miniBack").addEventListener("click", () => { if (miniView === "menu") closeMinis(); else showMini("menu"); });
 MI.menu.addEventListener("click", (e) => {
   const b = e.target.closest(".gamebtn"); if (!b) return;
-  if (b.dataset.g === "bomb") bombStart(); else pathStart();
+  if (b.dataset.g === "bomb") bombStart(); else mapStart();
 });
 $("bChoices").addEventListener("click", (e) => {
   const b = e.target.closest("[data-m]"); if (!b) return;
@@ -1795,17 +2360,43 @@ $("bTimer").addEventListener("click", (e) => {
   startTimer(+b.dataset.s, $("bClock"));
 });
 $("bInfo").addEventListener("click", () => openPose(B.pose));
-$("pDone").addEventListener("click", () => {
-  PL.done += 1;
-  PL.turn = 1 - PL.turn;
-  if (PL.done >= 4) pathAdvance();
-  pathDraw();
+$("mSilPick").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  M.sil[+b.dataset.p] = b.dataset.s;
+  store("pd_sil", M.sil.join(""));
+  mapSilUI();
 });
-$("pOther").addEventListener("click", pathDraw);
-$("pSkip").addEventListener("click", () => { pathAdvance(); pathDraw(); });
-$("pAnother").addEventListener("click", pathDraw);
-$("pEnd").addEventListener("click", () => { showMini("menu"); toast("Que lo disfruten"); });
-$("pInfo").addEventListener("click", () => openPose(PL.pose));
+$("mStart").addEventListener("click", mapBegin);
+$("mSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || +b.dataset.l === M.level) return;
+  M.level = +b.dataset.l;
+  mapToPick();
+});
+$("mView").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || b.dataset.v === M.view) return;
+  M.view = b.dataset.v;
+  mapToPick();
+});
+$("mFig").addEventListener("click", (e) => {
+  const g = e.target.closest("[data-z]"); if (!g) return;
+  mapZone(g.dataset.z);
+});
+$("mFig").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const g = e.target.closest("[data-z]"); if (!g) return;
+  e.preventDefault();
+  mapZone(g.dataset.z);
+});
+$("mIdeas").addEventListener("click", (e) => {
+  const b = e.target.closest(".idea"); if (!b) return;
+  mapChoose(b.dataset.i);
+});
+$("mRandom").addEventListener("click", mapRandom);
+$("mOther").addEventListener("click", () => { M.ideas = mapIdeas(M.zone, M.level, M.sil[1 - M.turn], M.sil[M.turn]); mapRender(); });
+$("mBackZone").addEventListener("click", mapToPick);
+$("mBackIdeas").addEventListener("click", () => { M.pick = null; M.phase = "ideas"; mapRender(); });
+$("mDone").addEventListener("click", mapDone);
+$("mRestart").addEventListener("click", () => { if (M.pick) startTimer(M.pick.sec, $("mClock")); });
 
 /* ===================== EVENTOS ===================== */
 // nivel inicial
