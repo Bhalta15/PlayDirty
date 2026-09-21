@@ -198,6 +198,11 @@ dialog a{color:var(--l1)}
 .steps i{height:6px;border-radius:3px;background:var(--panel-2)}
 .steps i.on{background:var(--l1)}
 
+.score{flex-wrap:wrap}
+.grid button.def:disabled{opacity:1;background:var(--l2);color:#fff;font-size:1rem}
+.grid button.safe:disabled{opacity:.3}
+#minis .card.boom .timer button{background:rgba(255,255,255,.2)}
+#minis .card.boom .qbtn{background:rgba(255,255,255,.22)}
 .toast{
   position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);
   background:var(--ink);color:var(--on);padding:12px 18px;border-radius:999px;font-weight:600;
@@ -320,24 +325,46 @@ dialog a{color:var(--l1)}
   </div>
 
   <div class="menu" id="miniMenu">
-    <button class="gamebtn" data-g="bomb"><b>La bomba</b><span>Hay un número secreto escondido. Por turnos eligen un número y la app dice si el secreto es más alto o más bajo. Quien pesca la bomba pierde y cumple un castigo cada vez más caliente, con ratitos de sexo oral y de relaciones.</span></button>
+    <button class="gamebtn" data-g="bomb"><b>La bomba</b><span>Tablero de 30 números tipo buscaminas. Eligen cuántas bombas hay (5, 8 o 12); quien pesca una cumple un castigo especial, ya sin ropa, para calentar antes de irse a la cama.</span></button>
     <button class="gamebtn" data-g="path"><b>Camino al final</b><span>Cinco etapas que suben el calor: besos, manos, menos ropa, boca y el final, con una pose y un ratito de ritmo lento o rápido para terminar en la cama.</span></button>
   </div>
 
   <div id="bomb" hidden>
-    <div class="score" id="bScore"></div>
-    <div class="stage">
-      <div class="card" id="bCard" aria-live="polite">
-        <p class="kind" id="bKind"></p>
-        <p class="text" id="bText"></p>
-        <p class="extra" id="bExtraTxt" hidden></p>
+    <div id="bSetup">
+      <h2 style="margin-top:22px">¿Cuántas bombas?</h2>
+      <p class="lead">Hay 30 números y algunos esconden una bomba. Por turnos eligen uno: si tiene bomba, quien lo pesca cumple un castigo y esa bomba queda desactivada. Los números no desaparecen, y la ronda sigue hasta que exploten todas.</p>
+      <div class="menu" id="bChoices">
+        <button class="gamebtn" data-m="5"><b>5 bombas</b><span>Poco riesgo: se pierde menos seguido y la ronda dura más.</span></button>
+        <button class="gamebtn" data-m="8"><b>8 bombas</b><span>Equilibrado: sube la tensión pero hay tiempo entre castigos.</span></button>
+        <button class="gamebtn" data-m="12"><b>12 bombas</b><span>Casi cualquier número explota: ronda rápida y muy caliente.</span></button>
       </div>
     </div>
-    <div class="grid" id="bGrid"></div>
-    <div class="acts" id="bActs" hidden>
-      <button class="ok" id="bNext">Otra ronda</button>
-      <button id="bExtra">Castigo extra</button>
-      <button class="ghost" id="bEnd">Terminar el juego</button>
+
+    <div id="bGame" hidden>
+      <div class="score" id="bScore"></div>
+      <div class="stage">
+        <div class="card" id="bCard" aria-live="polite">
+          <div class="kindrow">
+            <p class="kind" id="bKind"></p>
+            <button class="qbtn" id="bInfo" aria-label="Cómo se hace esta pose" hidden>?</button>
+          </div>
+          <p class="text" id="bText"></p>
+          <div class="timer" id="bTimer" hidden>
+            <button data-s="30">30 s</button>
+            <button data-s="60">1 min</button>
+            <button data-s="120">2 min</button>
+            <output id="bClock" aria-live="off"></output>
+          </div>
+        </div>
+      </div>
+      <div class="grid" id="bGrid"></div>
+      <div class="acts" id="bActs" hidden>
+        <button class="ok" id="bNext">Cumplido, seguir jugando</button>
+        <button id="bExtra">Otro castigo</button>
+        <button class="ok" id="bNew">Nueva ronda con bombas nuevas</button>
+        <button id="bChange">Cambiar cantidad de bombas</button>
+        <button class="ghost" id="bEnd">Terminar el juego</button>
+      </div>
     </div>
   </div>
 
@@ -1254,13 +1281,17 @@ function openPose(p) {
 /* ===================== CRONÓMETRO ===================== */
 let tId = null;
 function fmt(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
-function stopTimer() { clearInterval(tId); tId = null; el.clock.textContent = ""; }
-function startTimer(sec) {
+function stopTimer() {
+  clearInterval(tId); tId = null; el.clock.textContent = "";
+  const bc = document.getElementById("bClock"); if (bc) bc.textContent = "";
+}
+function startTimer(sec, out) {
+  out = out || el.clock;
   clearInterval(tId);
   const end = Date.now() + sec * 1000;
   const tick = () => {
     const left = Math.max(0, Math.round((end - Date.now()) / 1000));
-    el.clock.textContent = left > 0 ? fmt(left) : "¡Tiempo!";
+    out.textContent = left > 0 ? fmt(left) : "¡Tiempo!";
     if (left <= 0) {
       clearInterval(tId); tId = null;
       try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch (e) {}
@@ -1286,78 +1317,188 @@ function showMini(view) {
 function openMinis() { stopTimer(); el.setup.hidden = true; el.game.hidden = true; MI.root.hidden = false; showMini("menu"); }
 function closeMinis() { MI.root.hidden = true; el.setup.hidden = false; window.scrollTo(0, 0); }
 
-/* ---------- La bomba ---------- */
-const BOMB_MAX = 30;
-const B = { secret: 0, low: 1, high: BOMB_MAX, turn: 0, starter: 0, loser: 0, losses: [0, 0], over: false };
-const LADDER = [
-  "Quítate una prenda, la que elija tu pareja, y baila 20 segundos así.",
-  "Otra prenda más, y esta te la quita tu pareja con la boca.",
-  "Quédate en ropa interior y tu pareja te besa donde quiera durante 1 minuto.",
-  "Tu pareja te toca por debajo de la ropa interior durante 1 minuto, y tú no puedes moverte.",
-  "Quédate sin nada y recibe 1 minuto de sexo oral, sin decir una palabra.",
-  "Sexo oral de 1 minuto a tu pareja, con el ritmo que ella o él te marque.",
-  "Relaciones de 30 segundos, con protección, lentas, en la postura que elija tu pareja. Después paran.",
-  "1 minuto lento y 30 segundos rápido de relaciones, con protección, y se separan a respirar."
-];
-const ladderFor = (n) => LADDER[Math.min(n - 1, LADDER.length - 1)];
+/* ---------- La bomba (tipo buscaminas) ---------- */
+const BOMB_N = 30;
+const B = { count: 8, mines: new Set(), defused: new Set(), safe: new Set(), turn: 0, losses: [0, 0], phase: "setup", loser: 0, pick: 0, last: false, text: "", pose: null, u: {} };
 
+/* Castigos propios de este juego: ya sin ropa y encendidos, para dejar de jugar y seguir en la cama.
+   {POSE} se cambia por una pose al azar (con su botón «?»). Todo con protección y dentro de lo acordado. */
+const BOMB_PUN = [
+  "Acuéstate y deja que tu pareja te recorra con la lengua de los pies a la cabeza, sin saltarse nada, durante 2 minutos.",
+  "Roza tu cuerpo desnudo contra el de tu pareja durante 1 minuto, sin usar las manos.",
+  "Frota tu zona íntima contra la de tu pareja, sin penetración: 1 minuto lento y 30 segundos más rápido.",
+  "Tu pareja te toca con la mano donde más le guste durante 2 minutos, y tú no puedes moverte ni hacer ruido.",
+  "Recibe 1 minuto de besos y lengua en el cuello, el pecho y el abdomen, con los ojos cerrados.",
+  "Deja que tu pareja te bese y te lama los muslos durante 1 minuto sin tocar todavía tu zona íntima. Después, 30 segundos justo ahí.",
+  "Tócate frente a tu pareja durante 1 minuto, mirándole a los ojos. Después ella o él te toma el relevo.",
+  "Pon a tu pareja de espaldas y recorre su espalda, su nuca y sus glúteos con la lengua durante 1 minuto.",
+  "Sexo oral de 1 minuto a tu pareja, lento, mientras ella o él marca el ritmo con la mano.",
+  "Sexo oral de 2 minutos a tu pareja: 1 minuto lento y 1 minuto rápido. Después cambian.",
+  "Recibe 2 minutos de sexo oral con los ojos vendados, sin decir una palabra.",
+  "69 durante 2 minutos. Quien aguante más sin pedir cambio manda en el siguiente castigo.",
+  "Sexo oral 30 segundos rápido y 30 segundos lento, y paran del todo 20 segundos para mirarse.",
+  "Tu pareja te lleva al límite con la boca durante 2 minutos y para justo antes del final. Después cambian.",
+  "Dale a tu pareja sexo oral durante 90 segundos mientras ella o él te dice, paso a paso, qué hacer.",
+  "Recibe 1 minuto de sexo oral y, en cuanto tu pareja pare, le devuelves 1 minuto sin pausa.",
+  "3 tandas de 20 segundos de sexo oral con 10 segundos de pausa entre cada una. Tu pareja decide el ritmo de cada tanda.",
+  "Relaciones lentas durante 1 minuto, con protección, en la postura que elija tu pareja. Después se separan a respirar.",
+  "Penetración rápida durante 30 segundos, con protección, y paran del todo. Sin discutir.",
+  "1 minuto lento, 30 segundos rápido y 30 segundos de pausa abrazados. Con protección.",
+  "Cambio de ritmo cada 20 segundos (lento, rápido, pausa) durante 2 minutos, con protección.",
+  "Relaciones de 90 segundos con un solo ritmo, muy lento, mirándose a los ojos. Con protección.",
+  "Quien pescó la bomba se queda quieto o quieta y su pareja se mueve durante 1 minuto, con protección. Después cambian.",
+  "Tu pareja decide cuántos segundos (entre 30 y 90) y a qué ritmo tienen relaciones, con protección. Tú solo obedeces, dentro de lo acordado.",
+  "10 movimientos lentos, 10 medios y 10 rápidos, con protección, y se separan a respirar.",
+  "Relaciones de 90 segundos en la postura que elija quien NO pescó la bomba, con protección.",
+  "Prueben la pose «{POSE}» durante 1 minuto exacto, con protección. Después se separan.",
+  "Prueben «{POSE}» durante 1 minuto lento y 30 segundos rápido, con protección, y paran.",
+  "Tu pareja te pone en la pose «{POSE}» y llevan el ritmo que ella o él marque durante 90 segundos, con protección.",
+  "Prueben «{POSE}» sin penetración, solo rozándose, durante 2 minutos.",
+  "Prueben «{POSE}» durante 1 minuto y luego cambian de lugar para otro minuto, con protección.",
+  "«{POSE}» con ritmo de 20 segundos: lento, rápido, pausa. Repitan 3 veces, con protección.",
+  "Empiecen con «{POSE}» 30 segundos y sigan otros 30 segundos en la postura que quieran, con protección.",
+  "Durante 3 minutos tu pareja hace contigo lo que quiera, dentro de lo acordado, y tú solo dices «sí» o «más».",
+  "Con los ojos vendados, recibe 3 minutos de lo que tu pareja decida (boca, manos, roces) sin saber qué viene.",
+  "Tu pareja te pide tres cosas seguidas, de 30 segundos cada una, y las cumples sin preguntar.",
+  "Tú eliges: 2 minutos de sexo oral a tu pareja, o 1 minuto de relaciones donde ella o él manda, con protección.",
+  "Tu pareja elige la postura, el ritmo y el tiempo (máximo 2 minutos), sin discutir y dentro de lo acordado.",
+  "Mantén las manos detrás de la cabeza y recibe 2 minutos de boca y lengua donde tu pareja quiera.",
+  "Ratito completo de 3 minutos: 1 minuto de boca, 1 minuto de manos y 1 minuto de relaciones lentas, con protección.",
+  "Se turnan cada 30 segundos: boca, manos, roces y relaciones lentas con protección, durante 2 minutos.",
+  "1 minuto de besos por todo el cuerpo y 1 minuto de sexo oral, en el orden que decida tu pareja.",
+  "Tu pareja te lleva al límite con la mano durante 1 minuto y para justo antes. Después cambian.",
+  "Acuéstense frente a frente y muévanse lento, piel con piel, durante 2 minutos, sin penetración.",
+  "Siéntate encima de tu pareja, sin penetración, y muévete lento durante 1 minuto rozándola, y 30 segundos más rápido.",
+  "Sexo oral de 1 minuto a tu pareja y ella o él te devuelve otro minuto, sin pausa entre uno y otro.",
+  "Quédate quieto o quieta mientras tu pareja se toca frente a ti durante 1 minuto, sin que puedas tocarla. Después te toma a ti.",
+  "Pide con palabras claras lo que quieres recibir durante 2 minutos, y tu pareja lo cumple.",
+  "Recorre a tu pareja con la punta de la lengua, del cuello al borde de su zona íntima, y quédate ahí 1 minuto.",
+  "Boca abajo, deja que tu pareja te recorra la espalda con besos hasta los muslos durante 90 segundos, sin dejar de rozarte.",
+  "Mírense a los ojos y muévanse lento 1 minuto, con protección, sin decir una palabra. Al final, un beso largo.",
+  "Empiecen a besarse y no paren hasta que uno diga «ya». Dejan el juego a un lado y siguen en la cama."
+];
+
+function bpick(list, key) {
+  const u = B.u[key] = B.u[key] || [];
+  if (u.length >= list.length) u.length = 0;
+  let i;
+  do { i = Math.floor(Math.random() * list.length); } while (u.includes(i));
+  u.push(i);
+  return list[i];
+}
+function bombPun() {
+  let t = bpick(BOMB_PUN, "pun");
+  B.pose = null;
+  if (t.indexOf("{POSE}") !== -1) {
+    B.pose = bpick(BANK.pose[2], "pose");
+    t = t.split("{POSE}").join(B.pose.n);
+  }
+  B.text = t;
+}
+function bombPlace() {
+  const nums = [];
+  for (let i = 1; i <= BOMB_N; i++) nums.push(i);
+  for (let i = nums.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = nums[i]; nums[i] = nums[j]; nums[j] = tmp;
+  }
+  B.mines = new Set(nums.slice(0, B.count));
+  B.defused = new Set();
+  B.safe = new Set();
+}
 function bombStart() {
-  B.losses = [0, 0];
-  B.starter = Math.random() < 0.5 ? 0 : 1;
-  bombRound();
+  B.losses = [0, 0]; B.u = {}; B.turn = Math.random() < 0.5 ? 0 : 1; B.phase = "setup";
+  renderBomb();
   showMini("bomb");
 }
-function bombRound() {
-  B.secret = 1 + Math.floor(Math.random() * BOMB_MAX);
-  B.low = 1; B.high = BOMB_MAX;
-  B.turn = B.starter;
-  B.over = false;
+function bombBegin(count) {
+  B.count = count;
+  bombPlace();
+  B.phase = "play";
   renderBomb();
 }
 function bombPick(n) {
-  if (B.over) return;
-  if (n === B.secret) {
-    B.over = true; B.loser = B.turn; B.losses[B.loser] += 1;
+  if (B.phase !== "play" || B.defused.has(n) || B.safe.has(n)) return;
+  if (B.mines.has(n)) {
+    B.mines.delete(n);
+    B.defused.add(n);
+    B.safe.clear();
+    B.loser = B.turn;
+    B.losses[B.loser] += 1;
+    B.pick = n;
+    B.last = B.mines.size === 0;
+    bombPun();
+    B.phase = "boom";
     try { navigator.vibrate && navigator.vibrate([250, 120, 250]); } catch (e) {}
   } else {
-    if (n < B.secret) B.low = Math.max(B.low, n + 1); else B.high = Math.min(B.high, n - 1);
+    B.safe.add(n);
     B.turn = 1 - B.turn;
+    // si ya solo quedan bombas por pescar, se limpian los marcados y sigue el juego
+    if (B.safe.size >= BOMB_N - B.defused.size - B.mines.size) {
+      B.safe.clear();
+      toast("Se acabaron los números seguros: se reinician los marcados.");
+    }
   }
   renderBomb();
 }
 function renderBomb() {
+  stopTimer();
+  const setup = B.phase === "setup";
+  $("bSetup").hidden = !setup;
+  $("bGame").hidden = setup;
+  if (setup) return;
+
+  const play = B.phase === "play", boom = B.phase === "boom", over = B.phase === "over";
   const sc = $("bScore");
   sc.textContent = "";
-  [0, 1].forEach((i) => {
-    const s = document.createElement("span");
-    s.textContent = nameOf(i) + ": " + B.losses[i] + (B.losses[i] === 1 ? " pérdida" : " pérdidas");
-    sc.appendChild(s);
-  });
-  const card = $("bCard"), grid = $("bGrid"), text = $("bText");
-  card.classList.toggle("boom", B.over);
-  $("bExtraTxt").hidden = true;
-  grid.textContent = "";
+  [0, 1].map((i) => nameOf(i) + ": " + B.losses[i] + (B.losses[i] === 1 ? " pérdida" : " pérdidas"))
+    .concat(["Bombas: " + B.mines.size + " de " + B.count])
+    .forEach((t) => { const s = document.createElement("span"); s.textContent = t; sc.appendChild(s); });
 
-  if (B.over) {
-    grid.hidden = true; $("bActs").hidden = false;
-    $("bKind").textContent = "¡Boom!";
-    text.textContent = nameOf(B.loser) + " pescó el " + B.secret + ". " + ladderFor(B.losses[B.loser]);
-    $("bExtra").disabled = false;
-  } else {
-    grid.hidden = false; $("bActs").hidden = true;
+  const card = $("bCard"), grid = $("bGrid"), text = $("bText");
+  card.classList.toggle("boom", boom);
+  grid.hidden = !play;
+  $("bActs").hidden = play;
+  $("bTimer").hidden = !boom;
+  $("bInfo").hidden = !(boom && B.pose);
+  $("bNext").hidden = !boom;
+  $("bExtra").hidden = !boom;
+  $("bNew").hidden = !over;
+  $("bChange").hidden = !over;
+  $("bEnd").hidden = play;
+
+  if (play) {
     $("bKind").textContent = "Le toca a " + nameOf(B.turn);
-    text.textContent = B.low === B.high
-      ? "Solo queda un número y es la bomba. Mala suerte, " + nameOf(B.turn) + "."
-      : "El número secreto está entre " + B.low + " y " + B.high + ". Elige uno sin pescar la bomba.";
-    for (let n = 1; n <= BOMB_MAX; n++) {
+    text.textContent = "Quedan " + B.mines.size + (B.mines.size === 1 ? " bomba escondida" : " bombas escondidas") + " entre los " + BOMB_N + " números. Elige uno.";
+  } else if (boom) {
+    $("bKind").textContent = "¡Boom! El " + B.pick + " tenía bomba";
+    text.textContent = nameOf(B.loser) + ": " + B.text;
+    $("bNext").textContent = B.last ? "Cumplido, cerrar la ronda" : "Cumplido, seguir jugando";
+  } else {
+    $("bKind").textContent = "Ronda terminada";
+    text.textContent = "Ya explotaron las " + B.count + " bombas. ¿Empiezan otra ronda con bombas nuevas?";
+  }
+  text.classList.toggle("long", text.textContent.length > 110);
+  text.classList.toggle("xlong", text.textContent.length > 200);
+
+  grid.textContent = "";
+  if (play) {
+    for (let n = 1; n <= BOMB_N; n++) {
       const b = document.createElement("button");
-      b.type = "button"; b.textContent = n; b.dataset.n = n;
-      b.setAttribute("aria-label", "Número " + n);
-      b.disabled = n < B.low || n > B.high;
+      b.type = "button"; b.dataset.n = n;
+      if (B.defused.has(n)) {
+        b.className = "def"; b.textContent = "💥"; b.disabled = true;
+        b.setAttribute("aria-label", "Número " + n + ", bomba ya desactivada");
+      } else if (B.safe.has(n)) {
+        b.className = "safe"; b.textContent = n; b.disabled = true;
+        b.setAttribute("aria-label", "Número " + n + ", ya elegido");
+      } else {
+        b.textContent = n;
+        b.setAttribute("aria-label", "Número " + n);
+      }
       grid.appendChild(b);
     }
   }
-  text.classList.toggle("long", text.textContent.length > 110);
 }
 
 /* ---------- Camino al final ---------- */
@@ -1632,19 +1773,28 @@ MI.menu.addEventListener("click", (e) => {
   const b = e.target.closest(".gamebtn"); if (!b) return;
   if (b.dataset.g === "bomb") bombStart(); else pathStart();
 });
+$("bChoices").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-m]"); if (!b) return;
+  bombBegin(+b.dataset.m);
+});
 $("bGrid").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b || b.disabled) return;
   bombPick(+b.dataset.n);
 });
-$("bNext").addEventListener("click", () => { B.starter = 1 - B.starter; bombRound(); });
-$("bEnd").addEventListener("click", () => showMini("menu"));
-$("bExtra").addEventListener("click", () => {
-  const n = B.losses[B.loser];
-  const lvl = n >= 4 ? 2 : n >= 2 ? 1 : 0;
-  const x = $("bExtraTxt");
-  x.textContent = "Extra: " + pickLocal("castigo", lvl);
-  x.hidden = false;
+$("bNext").addEventListener("click", () => {
+  B.turn = 1 - B.loser;
+  B.phase = B.last ? "over" : "play";
+  renderBomb();
 });
+$("bExtra").addEventListener("click", () => { bombPun(); renderBomb(); });
+$("bNew").addEventListener("click", () => { bombPlace(); B.phase = "play"; renderBomb(); });
+$("bChange").addEventListener("click", () => { B.phase = "setup"; renderBomb(); });
+$("bEnd").addEventListener("click", () => showMini("menu"));
+$("bTimer").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  startTimer(+b.dataset.s, $("bClock"));
+});
+$("bInfo").addEventListener("click", () => openPose(B.pose));
 $("pDone").addEventListener("click", () => {
   PL.done += 1;
   PL.turn = 1 - PL.turn;
