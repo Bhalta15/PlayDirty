@@ -1,5 +1,5 @@
 /* PlayDirty - service worker: funciona sin internet */
-const CACHE = "playdirty-v4";
+const CACHE = "playdirty-v5";
 const SHELL = [
   "./",
   "./index.html",
