@@ -137,6 +137,7 @@ input:focus,select:focus{border-color:var(--l0);outline:none}
   background:var(--panel);border-radius:18px;padding:16px 10px;font-family:var(--display);font-weight:800;font-size:1.05rem;
 }
 .decks button small{display:block;font-family:var(--body);font-weight:400;color:var(--muted);font-size:.8rem;margin-top:2px}
+.decks button.full{grid-column:1/-1}
 .decks button.wide{grid-column:1/-1;background:var(--l2);color:#fff}
 .decks button.wide small{color:rgba(255,255,255,.85)}
 .decks button:disabled,.acts button:disabled{opacity:.5}
@@ -214,7 +215,7 @@ dialog a{color:var(--l1)}
     <img src="icon-192.png" alt="" width="56" height="56">
     <h1>PlayDirty</h1>
   </div>
-  <p class="lead">Retos, poses y minijuegos para dos, que van subiendo de temperatura. Solo para adultos.</p>
+  <p class="lead">Retos, castigos, poses y minijuegos para dos, que van subiendo de temperatura poco a poco. Solo para adultos. Todo es opcional y se puede saltar.</p>
 
   <div class="block">
     <label for="n1">¿Quiénes juegan?</label>
@@ -226,22 +227,36 @@ dialog a{color:var(--l1)}
 
   <button class="primary" id="start">Jugar con cartas<small>Retos, poses y castigos</small></button>
   <button class="primary alt" id="startMinis">Minijuegos<small>La bomba y Camino al final</small></button>
+  <p class="safe">Antes de jugar, ajusten el nivel de las cartas y lean las reglas aquí abajo.</p>
 
   <div class="block">
-    <span class="lbl">Ajusta las cartas: ¿con qué nivel empiezan?</span>
+    <span class="lbl">Ajustes de las cartas: ¿con qué nivel empiezan?</span>
     <div class="levels" id="levelPick">
-      <button class="lv" data-l="0" aria-pressed="true"><i class="dot"></i><div><b>Suave</b><span>Besos, caricias, ropa de menos y mucho coqueteo</span></div></button>
-      <button class="lv" data-l="1" aria-pressed="false"><i class="dot"></i><div><b>Picante</b><span>Ropa afuera, manos, boca y retos atrevidos</span></div></button>
-      <button class="lv" data-l="2" aria-pressed="false"><i class="dot"></i><div><b>Intenso</b><span>Sin ropa, relaciones a ritmo y más...</span></div></button>
+      <button class="lv" data-l="0" aria-pressed="true"><i class="dot"></i><div><b>Suave</b><span>Besos, caricias por encima de la ropa y una que otra prenda (playera, pantalón, calcetines). Solo retos y castigos</span></div></button>
+      <button class="lv" data-l="1" aria-pressed="false"><i class="dot"></i><div><b>Picante</b><span>Brasier o ropa interior, besos por el cuerpo, roces y ratitos cortos de sexo oral, sin penetración. Solo retos y castigos</span></div></button>
+      <button class="lv" data-l="2" aria-pressed="false"><i class="dot"></i><div><b>Intenso</b><span>Casi sin ropa: sexo oral, penetración y poses estilo kamasutra. Retos, poses y castigos</span></div></button>
     </div>
   </div>
 
   <div class="block">
     <label class="check">
       <input type="checkbox" id="auto" checked>
-      <span>Subir el nivel poco a poco<small>Cada 4 turnos sube un nivel, hasta Intenso.</small></span>
+      <span>Subir el nivel poco a poco<small>Cada 4 turnos sube un nivel, hasta Intenso (ahí aparecen las poses).</small></span>
     </label>
   </div>
+
+  <div class="block rules">
+    <h2>Antes de empezar</h2>
+    <ul>
+      <li><b>Todo es opcional.</b> Cualquiera puede pasar una carta cuando quiera.</li>
+      <li>Hablen antes de sus <b>límites</b>: lo que sí, lo que no y lo que quizá. Los retos de "no puedes negarte", los de zonas íntimas, el sexo oral y las relaciones se cumplen solo dentro de eso.</li>
+      <li>Elijan juntos una <b>palabra segura</b>. Si alguien la dice, se para todo.</li>
+      <li>Tengan <b>protección y lubricante</b> a la mano. Las cartas de relaciones dan por hecho que la usan.</li>
+      <li>Nada de dolor real, nada que no les guste y nada de fotos ni videos.</li>
+      <li>Si algo no se siente bien, se cambia de carta y ya.</li>
+    </ul>
+  </div>
+
   <button class="linkbtn" id="installBtn" hidden>Instalar PlayDirty en este dispositivo</button>
   <button class="linkbtn" id="openAI">Conectar IA de Gemini (opcional)</button>
 </section>
@@ -279,18 +294,18 @@ dialog a{color:var(--l1)}
   <div class="decks" id="decks">
     <button data-t="reto">Reto<small>Algo que hacer</small></button>
     <button data-t="pose">Pose<small>Una idea para probar</small></button>
-    <button data-t="sorpresa" class="wide">Aleatorio<small>Que decida la suerte</small></button>
+    <button data-t="sorpresa" class="wide">Sorpréndeme<small>Que decida la suerte</small></button>
   </div>
 
   <div class="acts" id="acts" hidden>
     <button class="ok" id="done">Hecho, sigue tu pareja</button>
-    <button id="pass">Paso, elijo un castigo</button>
-    <button class="ghost" id="skip">Pasar a otra carta, sin castigo (2 por juego)</button>
+    <button id="pass">Paso, me toca un castigo</button>
+    <button class="ghost" id="skip">Mejor otra carta sin castigo</button>
   </div>
 
   <div class="acts" id="actsPun" hidden>
     <button class="ok" id="donePun">Cumplido, sigue tu pareja</button>
-    <button class="ghost" id="skipPun">Saltar sin castigo (2 por juego)</button>
+    <button class="ghost" id="skipPun">No quiero, saltar sin castigo</button>
   </div>
 
   <p class="safe">Si algo no te late, di la palabra segura y paramos.</p>
@@ -1047,15 +1062,16 @@ const ART_HELP = {
 };
 
 const TYPE_DESC = {
-  reto: "un reto sensual y atrevido entre los dos: quitarse ropa, ropa interior o quedarse sin nada, vendas en los ojos, hielo, besos, tocar, besar o lamer donde elija el otro (zonas íntimas incluidas en Picante e Intenso), sexo oral por un tiempo corto, y en Intenso ratitos cortos de relaciones (con protección) a ritmo lento o rápido, con pausas, o cumplir lo que pida el otro sin poder negarse (dentro de lo acordado)",
+  reto: "un reto entre los dos que respete estrictamente el nivel indicado",
   pose: "una postura o posición estilo kamasutra para probar juntos, con nombre llamativo (silla, loto, amazona, tijera, ducha, espejo, pared, borde de la cama, perrito, misionero...), descrita en tono sugerente, con cómo se hace paso a paso y una nota de comodidad o cuidado si es exigente",
-  castigo: "una penitencia atrevida y caliente para quien decidió pasar una carta (quitarse ropa, quedarse en ropa interior, obedecer un rato, jugar con los ojos vendados, besos, caricias, sexo oral por 30 a 90 segundos, y en Intenso ratitos cortos de relaciones con protección a ritmo lento o rápido, con pausas)"
+  castigo: "una penitencia para quien decidió pasar una carta, del mismo nivel indicado, un poco más atrevida que un reto normal pero sin pasarse de ese nivel"
 };
 const LEVEL_DESC = [
-  "Suave: coqueto y caliente. Besos profundos, manos bajo la ropa, quitar la prenda de arriba, besos en muslos por encima de la ropa, susurros picantes. Sin llegar a zonas íntimas directas.",
-  "Picante: atrevido y sensual. Ropa interior, tocar por debajo de la ropa interior, sexo oral muy corto (30 a 60 segundos), tocarse frente al otro, hielo, vendas, control por turnos.",
-  "Intenso: muy atrevido, erótico y apasionado. Quedarse sin nada, estriptis, sexo oral de 1 a 3 minutos, 69, llevar al límite y parar, y ratitos cortos de relaciones (con protección) a ritmo lento o rápido, de 30 segundos a 2 minutos, con pausas. Sin lenguaje vulgar ni descripciones anatómicas gráficas."
+  "Suave (nivel 1, calentar): besos, caricias por encima de la ropa, susurros, bailar pegados y quitarse una o dos prendas de afuera (playera o blusa, pantalón o falda, calcetines). NO tocar zonas íntimas, NO ropa interior, NO sexo.",
+  "Picante (nivel 2): quitar más prendas, incluido el brasier o la ropa interior de abajo (una de las dos), besos por todo el cuerpo, besar y lamer zonas íntimas por encima de la ropa interior, caricias por encima de la ropa interior, roces y frotarse cuerpo con cuerpo sin quitarse todo, y ratitos muy cortos de sexo oral (20 a 60 segundos). SIN penetración.",
+  "Intenso (nivel 3): casi o totalmente sin ropa. Sexo oral (30 segundos a 3 minutos), lamer, chupar, tocar y tocarse, 69, llevar al límite y parar, y ratitos cortos de penetración (con protección) a ritmo lento o rápido, de 30 segundos a 2 minutos, con pausas. Sin lenguaje vulgar ni descripciones anatómicas gráficas."
 ];
+
 
 
 async function askGemini(type, level) {
@@ -1141,6 +1157,10 @@ function renderGame() {
 
   const inPick = S.mode === "pick";
   el.decks.hidden = !inPick;
+  const canPose = S.level >= 2;
+  el.decks.querySelector('[data-t="pose"]').hidden = !canPose;
+  el.decks.querySelector('[data-t="sorpresa"]').hidden = !canPose;
+  el.decks.querySelector('[data-t="reto"]').classList.toggle("full", !canPose);
   el.acts.hidden = S.mode !== "card";
   el.actsPun.hidden = S.mode !== "punish";
 
@@ -1170,7 +1190,8 @@ function flip() {
 
 async function draw(type, punish) {
   if (S.busy) return;
-  if (type === "sorpresa") type = Math.random() < 0.6 ? "reto" : "pose";
+  if (type === "sorpresa") type = (S.level >= 2 && Math.random() < 0.4) ? "pose" : "reto";
+  if (type === "pose" && S.level < 2) type = "reto";
   S.busy = true;
   document.querySelectorAll(".decks button, .acts button").forEach((b) => (b.disabled = true));
   el.card.classList.add("loading");
@@ -1412,6 +1433,157 @@ const FINAL_TASKS = [
   "Mírense a los ojos durante 1 minuto y muévanse muy despacio, con protección.",
   "Elijan: 90 segundos seguidos o 3 tandas de 30 segundos con pausa. Con protección."
 ];
+/* ===================== V3: NIVELES GRADUALES (poses solo en Intenso) ===================== */
+(function () {
+  // Lo que ya era muy fuerte para Suave/Picante pasa a Intenso
+  const hotRe = /por debajo de tu ropa interior|Sexo oral|sexo oral|Tócate|propia mano|tócate|Pon tu boca|debajo de la ropa interior|Recorre con la lengua el cuerpo/;
+  const movedReto = BANK.reto[1].filter((t) => hotRe.test(t));
+  const movedCast = BANK.castigo[1].filter((t) => hotRe.test(t));
+  BANK.reto[2].push(...movedReto);
+  BANK.castigo[2].push(...movedCast);
+
+  // ---------- NIVEL 1 · SUAVE: calentar, besos, tocar por encima de la ropa, prendas de afuera ----------
+  BANK.reto[0] = [
+    "Dale a tu pareja un beso largo de 30 segundos sin parar, con las manos en su cintura.",
+    "Susúrrale al oído lo que más te gusta de su cuerpo y lo que te gustaría hacerle más tarde.",
+    "Dale un masaje de cuello y hombros durante 2 minutos y termina con un beso lento en el cuello.",
+    "Bailen pegaditos una canción completa, rozándose sin separar el abrazo.",
+    "Mírense a los ojos 1 minuto en silencio. Quien se ría o desvíe la mirada le debe un beso al otro donde diga.",
+    "Tu pareja elige dónde quiere tus manos durante 1 minuto (espalda, cintura, muslos) y tú te dejas guiar, por encima de la ropa.",
+    "Besa a tu pareja en 5 lugares distintos que ella o él elija, de la cintura para arriba.",
+    "Abraza a tu pareja por detrás, pega tu cuerpo al suyo y cuéntale al oído lo que te imaginas esta noche.",
+    "Quítale los calcetines a tu pareja y dale besitos en los tobillos mientras le das un masaje de pies.",
+    "Quítale a tu pareja la playera o la blusa despacio, besando cada parte que descubras.",
+    "Quítate la playera o la blusa mirando a tu pareja y déjala en sus manos.",
+    "Tu pareja te quita el pantalón o la falda, con calma y sin dejar de mirarte a los ojos.",
+    "Quítense cada uno una prenda de arriba, a la vez, sin apartar la mirada.",
+    "Quítate dos prendas de un jalón (por ejemplo playera y calcetines) y baila 30 segundos para tu pareja.",
+    "Deja que tu pareja te bese el cuello durante 1 minuto sin que puedas moverte.",
+    "Siéntate en las piernas de tu pareja y bésala o bésalo despacio mientras sus manos bajan por tu espalda, por encima de la ropa.",
+    "Dibuja con un dedo un camino de caricias por el brazo, el hombro y el cuello de tu pareja. Que adivine hacia dónde vas.",
+    "Dile a tu pareja tres cosas que le harías más tarde, cada una acompañada de un beso.",
+    "Dale un beso en cada dedo de la mano de tu pareja y sube por el brazo hasta el cuello, muy despacio.",
+    "Bésale los muslos a tu pareja por encima de la ropa, de la rodilla hacia arriba, y para donde ella o él te diga.",
+    "Tu pareja te venda los ojos 1 minuto y te besa donde quiera, de la cintura para arriba.",
+    "Ponte detrás de tu pareja, pega tu cuerpo al suyo y susúrrale qué le harías si estuvieran solos sin reglas.",
+    "Roza con los labios la piel de tu pareja, sin llegar a besarla, del cuello a los hombros, durante 1 minuto.",
+    "Acaricia la espalda y los brazos de tu pareja por encima de la ropa durante 1 minuto, muy lento.",
+    "Tu pareja elige una prenda tuya (playera, pantalón, calcetines o falda) y te la quitas bailando.",
+    "Besa a tu pareja en el cuello y las orejas durante 1 minuto mientras te agarra de la cintura.",
+    "Dile a tu pareja una fantasía que tengas con ella o él, y cierra cada frase con un beso.",
+    "Acuéstense uno sobre el otro, con toda la ropa puesta, y bésense 1 minuto, rozándose sin prisa."
+  ];
+  BANK.castigo[0] = [
+    "Quítate una prenda a elección de tu pareja (playera, blusa, pantalón, falda o calcetines).",
+    "Deja que tu pareja te bese el cuello durante 30 segundos sin moverte.",
+    "Dale a tu pareja un beso apasionado de 20 segundos.",
+    "Tu pareja elige dónde recibe un beso tuyo (fuera de zonas íntimas), y tú aceptas.",
+    "Abraza a tu pareja por detrás 30 segundos y susúrrale lo que más te gusta de ella o él.",
+    "Dale a tu pareja tres besos: uno en la frente, uno en el cuello y uno donde ella o él elija.",
+    "Baila pegado o pegada a tu pareja, rozándola despacio, hasta que termine la canción.",
+    "Deja que tu pareja te acaricie por encima de la ropa durante 1 minuto.",
+    "Quítate dos prendas de un jalón (por ejemplo playera y calcetines) y quédate así hasta que termine la ronda.",
+    "Susúrrale al oído lo que te gustaría que te hiciera esta noche.",
+    "Tu pareja te besa donde quiera (fuera de zonas íntimas) durante 30 segundos y tú no puedes tocarla.",
+    "Quítale a tu pareja la playera o la blusa, con calma y usando solo las manos.",
+    "Siéntate en las piernas de tu pareja y dale besos lentos durante 1 minuto.",
+    "Confiésale a tu pareja una fantasía suave y ciérrala con un beso lento.",
+    "Dale a tu pareja un masaje de manos de 1 minuto y un beso en cada muñeca.",
+    "Deja que tu pareja te quite el pantalón o la falda y te mire 10 segundos."
+  ];
+
+  // ---------- NIVEL 2 · PICANTE: brasier o ropa interior, besos por el cuerpo, roces, sin penetración ----------
+  BANK.reto[1] = [
+    "Quítale una prenda a tu pareja usando solo la boca.",
+    "Tu pareja elige una prenda tuya y te la quitas despacio, mirándole a los ojos.",
+    "Baila sensual para tu pareja y quítate una prenda al terminar la canción (pantalón, falda o la de arriba).",
+    "Véndale los ojos a tu pareja y bésala donde quieras. Tiene que adivinar dónde.",
+    "Pasa un hielo por el cuello de tu pareja y sigue el camino con besos.",
+    "Dale un masaje con aceite o crema en la espalda durante 3 minutos, cada vez más lento y más abajo.",
+    "Besa a tu pareja desde el cuello hasta el ombligo, lo más lento que puedas.",
+    "Quédate en ropa interior frente a tu pareja y date una vuelta lenta para que te vea.",
+    "Tu pareja elige dónde quiere que la o lo toques y por cuánto tiempo (máximo 2 minutos), incluso zonas íntimas por encima de la ropa interior. No puedes negarte, dentro de lo acordado.",
+    "Con los ojos vendados, deja que tu pareja te bese donde quiera durante 2 minutos, sin que puedas tocarla.",
+    "Susúrrale a tu pareja lo que le harías más tarde, con detalle, durante 1 minuto entero.",
+    "Juego de caliente y frío: con los ojos vendados, tu pareja te busca con los labios siguiendo tus pistas.",
+    "Quítale la prenda de arriba a tu pareja con los dientes o con los labios, sin usar las manos.",
+    "Quítale a tu pareja el brasier o la prenda de arriba que le quede, despacio, y besa lo que descubras.",
+    "Tu pareja elige una de tus prendas de abajo (pantalón, falda o ropa interior) y te la quitas despacio para ella o él.",
+    "Besa a tu pareja por encima de la ropa interior, en el lugar que ella o él elija, durante 1 minuto.",
+    "Besa y lame por encima de la ropa interior la zona íntima de tu pareja durante 30 segundos, y para.",
+    "Recorre con la lengua la parte interna de los muslos de tu pareja, muy despacio, hasta el borde de su ropa interior.",
+    "Pégate al cuerpo de tu pareja, en ropa interior, y frótense despacio durante 2 minutos, sin quitarse nada.",
+    "Acaricia a tu pareja por encima de la ropa interior: 1 minuto lento y 30 segundos más rápido.",
+    "Rocen sus zonas íntimas por encima de la ropa interior durante 1 minuto, sin quitársela.",
+    "Bésale el pecho a tu pareja durante 1 minuto (por encima del brasier o sin él, como ella o él elija).",
+    "Con los ojos vendados, adivina qué te pasa tu pareja por el cuerpo: hielo, un beso, sus dedos o su lengua.",
+    "Muérdele suave a tu pareja el cuello, las orejas y los hombros durante 1 minuto, mientras se queda quieto o quieta.",
+    "Cuéntale en voz baja tu fantasía más atrevida. Tu pareja decide si la cumplen esta noche.",
+    "Recorre el cuerpo de tu pareja con la punta de los dedos a un centímetro de la piel, sin tocarla, durante 1 minuto. Termina con un beso donde más se le antoje.",
+    "Siéntate encima de tu pareja, en ropa interior, y muévete lento durante 1 minuto, rozándola, sin quitarse nada.",
+    "Con la ropa interior puesta, tu pareja te besa y te acaricia donde quiera durante 2 minutos. Tú solo respiras.",
+    "Quítate la prenda de arriba bailando y aviéntasela a tu pareja.",
+    "Baila pegado o pegada a tu pareja, rozando las partes por encima de la ropa interior, hasta que te diga basta.",
+    "Dile a tu pareja qué parte suya se te antoja besar primero y bésala ahí con calma, por encima de la ropa interior.",
+    "Deja que tu pareja te acaricie la espalda y el abdomen, sin ropa, durante 1 minuto.",
+    "Besa el abdomen y la cadera de tu pareja hasta el borde de su ropa interior, sin pasar de ahí. Sube y repite 3 veces.",
+    "Reto de control: tu pareja te acaricia por encima de la ropa interior 1 minuto y tú dices «más lento» o «más rápido».",
+    "Quítense una prenda cada uno, la que el otro elija, y sigan besándose 1 minuto.",
+    "Acuéstense en ropa interior, uno sobre el otro, y bésense 2 minutos, moviéndose despacio, sin quitarse nada más."
+  ];
+  BANK.castigo[1] = [
+    "Quítate una prenda a elección de tu pareja.",
+    "1 minuto de besos en el cuello de tu pareja sin usar las manos.",
+    "En tu próximo turno juegas con los ojos vendados.",
+    "Dile en voz alta y sin pena algo atrevido que quieras hacer esta noche.",
+    "Quédate en ropa interior hasta que termine la siguiente ronda.",
+    "Deja que tu pareja te toque donde quiera durante 1 minuto, por encima de la ropa interior, sin protestar (dentro de lo acordado).",
+    "Baila sexy durante 30 segundos y quítate una prenda al terminar.",
+    "Tu pareja te quita una prenda usando solo la boca.",
+    "Deja que tu pareja te bese por encima de la ropa interior donde quiera durante 30 segundos.",
+    "Con los ojos vendados, adivina tres cosas que te pase tu pareja por el cuerpo: hielo, un beso o una caricia.",
+    "Besa y lame el cuello y la oreja de tu pareja durante 1 minuto mientras te sostiene de la cintura.",
+    "Susúrrale a tu pareja qué le harías si estuvieran sin reglas, con todo detalle.",
+    "Quédate sin la prenda de arriba y deja que tu pareja te bese el pecho durante 1 minuto.",
+    "Muérdele suave a tu pareja el labio, el cuello y el hombro, uno por uno.",
+    "Quítate el pantalón o la falda y quédate así durante la siguiente ronda.",
+    "Recibe 1 minuto de besos y lengua en la parte interna de los muslos, hasta el borde de la ropa interior.",
+    "Frótate contra tu pareja, en ropa interior, durante 1 minuto, sin quitarse nada.",
+    "Tu pareja te acaricia por encima de la ropa interior durante 1 minuto y tú no puedes moverte.",
+    "Besa y lame por encima de la ropa interior la zona íntima de tu pareja durante 30 segundos.",
+    "Quédate en ropa interior y baila 20 segundos frente a tu pareja.",
+    "Deja que tu pareja te quite el brasier o la ropa interior de abajo (solo una de las dos) con la boca.",
+    "Rocen sus zonas íntimas por encima de la ropa interior durante 30 segundos."
+  ];
+
+  // ---------- NIVEL 3 · INTENSO: todo, y aquí sí salen las poses ----------
+  BANK.pose = [[], [], BANK.pose[1].concat(BANK.pose[2])];
+
+  // Camino al final: la etapa "Manos" no llega todavía a ropa interior
+  const heavy = /por debajo de la ropa interior|Quítale la ropa interior/;
+  const moved = PATH[1].t.filter((t) => heavy.test(t));
+  PATH[1].t = PATH[1].t.filter((t) => !heavy.test(t));
+  PATH[2].t.push(...moved);
+})();
+
+/* ===================== V4: ratitos de sexo oral en Picante ===================== */
+BANK.reto[1].push(
+  "Dale a tu pareja 30 segundos de sexo oral, suave y despacio. Quien recibe decide cuándo se corta.",
+  "Sexo oral de 30 segundos a tu pareja, haciendo a un lado la ropa interior, y paras cuando ella o él diga.",
+  "Tu pareja te hace sexo oral 45 segundos y para de golpe. Después cambian.",
+  "Besa y lame la zona íntima de tu pareja durante 1 minuto, con el ritmo que ella o él te marque con palabras.",
+  "Sexo oral rapidito: 30 segundos a cada uno, sin prisa, y vuelven a las cartas.",
+  "Dale a tu pareja 20 segundos de boca lenta y 20 segundos más rápida, y para.",
+  "Con los ojos vendados, recibe 30 segundos de sexo oral y adivina cuándo cambia el ritmo.",
+  "Sexo oral de 1 minuto a tu pareja, en la postura que ella o él elija. Después cambian."
+);
+BANK.castigo[1].push(
+  "Sexo oral de 30 segundos a tu pareja, suave, y ella o él decide cuándo termina.",
+  "Recibe 30 segundos de sexo oral con los ojos vendados, sin decir una palabra.",
+  "Dale a tu pareja 45 segundos de sexo oral, lento y luego más rápido.",
+  "Sexo oral de 1 minuto a tu pareja, con el ritmo que te marque. Después cambian.",
+  "Tu pareja te hace sexo oral 30 segundos y para justo antes de que pidas más."
+);
 const PL = { stage: 0, turn: 0, done: 0, used: {}, pose: null, text: "" };
 
 function uniq(list, key) {
